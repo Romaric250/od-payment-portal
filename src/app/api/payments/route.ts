@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { checkoutSchema } from "@/lib/validators";
 import { fapshiService } from "@/lib/fapshi";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
+import { getAppUrl } from "@/lib/app-url";
 import { env } from "@/lib/env";
 import { logError, logInfo, serializeError, getErrorMessage } from "@/lib/logger";
 
@@ -69,7 +70,10 @@ export async function POST(request: Request) {
       },
     });
 
-    const redirectUrl = `${env.appUrl}/pay/${category.slug}/success?paymentId=${payment.id}`;
+    const appUrl = getAppUrl(request);
+    const redirectUrl = `${appUrl}/pay/${category.slug}/success?paymentId=${payment.id}`;
+
+    logInfo("POST /api/payments redirect URL", { appUrl, redirectUrl });
 
     try {
       const fapshiResponse = await fapshiService.initiatePay({

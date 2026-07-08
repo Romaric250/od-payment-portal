@@ -10,7 +10,7 @@ import { adminCreateSchema } from "@/lib/validators";
 import { createAuditLog } from "@/lib/audit";
 import { sendEmail } from "@/lib/resend";
 import { adminInviteEmail } from "@/lib/emails/templates";
-import { env } from "@/lib/env";
+import { getAppUrl } from "@/lib/app-url";
 
 export const dynamic = "force-dynamic";
 
@@ -96,7 +96,7 @@ export async function POST(request: Request) {
       html: adminInviteEmail({
         name: admin.name,
         email: admin.email,
-        loginUrl: `${env.appUrl}/admin/login`,
+        loginUrl: `${getAppUrl(request)}/admin/login`,
         temporaryPassword: parsed.data.password,
       }),
     });
