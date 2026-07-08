@@ -26,7 +26,7 @@ export function PublicFooter() {
     <footer className="border-t border-od-border bg-white">
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <p className="text-center text-sm text-od-text-muted">
-          Secure payments powered by MTN Mobile Money & Orange Money via Fapshi.
+          Secure payments powered by MTN Mobile Money & Orange Money
         </p>
         <p className="mt-2 text-center text-sm text-od-text-muted">
           Questions? Contact{" "}

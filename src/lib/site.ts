@@ -4,6 +4,9 @@ import { env } from "@/lib/env";
 export const LOGO_CDN_URL =
   "https://g9kbtbs1bu.ufs.sh/f/woziFUfAWTFp7lFzT6vRlS1GrWLQhwZMzocm87npUf63sV5v";
 
+export const FAVICON_CDN_URL =
+  "https://g9kbtbs1bu.ufs.sh/f/woziFUfAWTFp2QWpmhsZSxCkjUVIsmGO63vNt9rbXzKeBuEo";
+
 export const LOGO_PATH = "/odlogo.png";
 
 export const siteConfig = {
@@ -69,8 +72,11 @@ export const defaultMetadata: Metadata = {
     path: "/",
   }),
   icons: {
-    icon: [{ url: LOGO_PATH, type: "image/png" }],
-    shortcut: [{ url: LOGO_PATH }],
-    apple: [{ url: LOGO_PATH, type: "image/png" }],
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: FAVICON_CDN_URL, sizes: "any" },
+    ],
+    shortcut: [{ url: "/favicon.ico" }],
+    apple: [{ url: "/odlogo.png", type: "image/png" }],
   },
 };
