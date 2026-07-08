@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { defaultMetadata } from "@/lib/site";
 import "./globals.css";
 
 const inter = Inter({
@@ -7,10 +8,7 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-export const metadata: Metadata = {
-  title: "Open Dreams Payment Portal",
-  description: "Secure payments for Open Dreams programs and merchandise",
-};
+export const metadata: Metadata = defaultMetadata;
 
 export default function RootLayout({
   children,

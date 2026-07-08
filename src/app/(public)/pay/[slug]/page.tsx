@@ -1,11 +1,41 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { formatCurrency } from "@/lib/format";
 import { PublicHeader, PublicFooter } from "@/components/public/site-chrome";
 import { CheckoutForm } from "@/components/public/checkout-form";
+import { buildMetadata, LOGO_CDN_URL, siteConfig } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}): Promise<Metadata> {
+  const category = await prisma.category.findFirst({
+    where: { slug: params.slug, isActive: true },
+  });
+
+  if (!category) {
+    return { title: "Category Not Found" };
+  }
+
+  const description =
+    category.description ??
+    `Pay ${category.price.toLocaleString()} FCFA for ${category.name} on ${siteConfig.name}.`;
+
+  return buildMetadata({
+    title: `${category.name} — ${siteConfig.name}`,
+    description,
+    path: `/pay/${category.slug}`,
+    image:
+      category.images[0]?.startsWith("http")
+        ? category.images[0]
+        : LOGO_CDN_URL,
+  });
+}
 
 export default async function PayPage({
   params,

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -14,6 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { siteConfig } from "@/lib/site";
 
 const navItems = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
@@ -32,8 +34,16 @@ export function AdminSidebar() {
   return (
     <aside className="hidden w-64 shrink-0 border-r border-od-border bg-white lg:block">
       <div className="border-b border-od-border px-6 py-5">
-        <p className="font-semibold text-od-navy">Open Dreams</p>
-        <p className="text-xs text-od-text-muted">Admin Dashboard</p>
+        <Link href="/admin">
+          <Image
+            src={siteConfig.logoPath}
+            alt={siteConfig.name}
+            width={140}
+            height={42}
+            className="h-9 w-auto"
+          />
+        </Link>
+        <p className="mt-2 text-xs text-od-text-muted">Admin Dashboard</p>
       </div>
       <nav className="space-y-1 p-4">
         {navItems

@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema } from "@/lib/validators";
+import { siteConfig } from "@/lib/site";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,11 +55,17 @@ export default function AdminLoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-od-bg px-4">
       <Card className="w-full max-w-md">
-        <CardHeader>
+        <CardHeader className="text-center">
+          <div className="mb-4 flex justify-center">
+            <Image
+              src={siteConfig.logoPath}
+              alt={siteConfig.name}
+              width={160}
+              height={48}
+              className="h-10 w-auto"
+            />
+          </div>
           <CardTitle>Admin Sign In</CardTitle>
-          <p className="text-sm text-od-text-muted">
-            Open Dreams Payment Portal
-          </p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
