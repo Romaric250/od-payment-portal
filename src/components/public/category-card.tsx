@@ -1,6 +1,6 @@
 import Link from "next/link";
-import Image from "next/image";
 import { formatCurrency } from "@/lib/format";
+import { CategoryCoverImage } from "@/components/public/category-cover-image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -20,21 +20,13 @@ export function CategoryCard({ category }: CategoryCardProps) {
 
   return (
     <Card className="overflow-hidden transition-shadow hover:shadow-md">
-      <div className="relative aspect-[16/10] bg-od-bg">
-        {coverImage ? (
-          <Image
-            src={coverImage}
-            alt={category.name}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 33vw"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center text-od-text-muted">
-            No image
-          </div>
-        )}
-      </div>
+      {coverImage ? (
+        <CategoryCoverImage src={coverImage} alt={category.name} />
+      ) : (
+        <div className="flex aspect-[4/3] items-center justify-center bg-od-bg text-od-text-muted">
+          No image
+        </div>
+      )}
       <CardHeader>
         <CardTitle>{category.name}</CardTitle>
         {category.description && (

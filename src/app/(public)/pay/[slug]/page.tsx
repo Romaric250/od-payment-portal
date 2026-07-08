@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import Image from "next/image";
 import { prisma } from "@/lib/prisma";
+import { CategoryCoverImage } from "@/components/public/category-cover-image";
 import { formatCurrency } from "@/lib/format";
 import { PublicHeader, PublicFooter } from "@/components/public/site-chrome";
 import { CheckoutForm } from "@/components/public/checkout-form";
@@ -56,21 +56,19 @@ export default async function PayPage({
       <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
         <div className="grid gap-8 lg:grid-cols-2">
           <div>
-            <div className="relative mb-6 aspect-[16/10] overflow-hidden rounded-xl bg-white">
-              {coverImage ? (
-                <Image
-                  src={coverImage}
-                  alt={category.name}
-                  fill
-                  className="object-cover"
-                  priority
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center text-od-text-muted">
-                  No image
-                </div>
-              )}
-            </div>
+            {coverImage ? (
+              <CategoryCoverImage
+                src={coverImage}
+                alt={category.name}
+                className="mb-6 overflow-hidden rounded-xl"
+                priority
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+            ) : (
+              <div className="mb-6 flex aspect-[4/3] items-center justify-center rounded-xl bg-white text-od-text-muted">
+                No image
+              </div>
+            )}
             <h1 className="text-3xl font-bold text-od-navy">{category.name}</h1>
             {category.description && (
               <p className="mt-3 text-od-text-muted">{category.description}</p>

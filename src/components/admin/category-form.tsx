@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { UploadButton } from "@/lib/uploadthing";
+import { CategoryImageUpload } from "@/components/admin/category-image-upload";
 import { slugify } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -187,8 +187,8 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
             <Label>Images</Label>
             <div className="flex flex-wrap gap-3">
               {images.map((url) => (
-                <div key={url} className="relative h-20 w-28 overflow-hidden rounded-lg border">
-                  <Image src={url} alt="" fill className="object-cover" />
+                <div key={url} className="relative h-20 w-28 overflow-hidden rounded-lg border bg-white">
+                  <Image src={url} alt="" fill className="object-contain p-1" />
                   {canWrite && (
                     <button
                       type="button"
@@ -202,12 +202,9 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
               ))}
             </div>
             {canWrite && (
-              <UploadButton
-                endpoint="categoryImage"
-                onClientUploadComplete={(res) => {
-                  setImages([...images, ...res.map((f) => f.ufsUrl)]);
-                }}
-                onUploadError={(err) => setError(err.message)}
+              <CategoryImageUpload
+                onComplete={(urls) => setImages([...images, ...urls])}
+                onError={(message) => setError(message)}
               />
             )}
           </div>
