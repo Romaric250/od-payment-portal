@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { CategoryForm } from "@/components/admin/category-form";
 import { StatCard, StatCardCurrency } from "@/components/admin/stat-card";
+import { AdminPageLoading } from "@/components/admin/admin-loading";
 import { TransactionsTable } from "@/components/admin/transactions-table";
 import { Input } from "@/components/ui/input";
 
@@ -100,7 +101,7 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
   });
 
   if (!category || !stats) {
-    return <p className="text-od-text-muted">Loading category...</p>;
+    return <AdminPageLoading />;
   }
 
   return (

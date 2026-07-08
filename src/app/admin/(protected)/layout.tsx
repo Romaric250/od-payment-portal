@@ -1,18 +1,15 @@
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth";
-import { AdminLayoutShell } from "@/components/admin/admin-layout-client";
+import { Suspense } from "react";
+import { AdminDashboardLoading } from "@/components/admin/admin-loading";
+import { ProtectedAdminContent } from "./protected-content";
 
-export default async function ProtectedAdminLayout({
+export default function ProtectedAdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user?.id) {
-    redirect("/admin/login");
-  }
-
-  return <AdminLayoutShell>{children}</AdminLayoutShell>;
+  return (
+    <Suspense fallback={<AdminDashboardLoading />}>
+      <ProtectedAdminContent>{children}</ProtectedAdminContent>
+    </Suspense>
+  );
 }

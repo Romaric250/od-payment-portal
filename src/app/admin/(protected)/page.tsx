@@ -13,6 +13,7 @@ import {
   YAxis,
 } from "recharts";
 import { StatCard, StatCardCurrency } from "@/components/admin/stat-card";
+import { AdminPageLoading } from "@/components/admin/admin-loading";
 import { TransactionsTable } from "@/components/admin/transactions-table";
 import { formatCurrency } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -68,7 +69,7 @@ export default function AdminDashboardPage() {
   }, [status, router]);
 
   if (status === "loading" || (status === "authenticated" && !stats && !error)) {
-    return <p className="text-od-text-muted">Loading dashboard...</p>;
+    return <AdminPageLoading />;
   }
 
   if (error || !stats) {

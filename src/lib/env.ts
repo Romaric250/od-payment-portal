@@ -22,6 +22,7 @@ export const env = {
   emailFrom: process.env.EMAIL_FROM ?? "Open Dreams <payments@open-dreams.org>",
   appUrl: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
   uploadthingToken: process.env.UPLOADTHING_TOKEN ?? "",
+  adminAccessSecret: process.env.ADMIN_ACCESS_SECRET ?? "",
 };
 
 export function assertServerEnv() {
