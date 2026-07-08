@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+}
+
+enum AccessLevel {
+  READ_WRITE
+  READ_ONLY
+}
+
+enum PaymentStatus {
+  INITIATED
+  PENDING
+  SUCCESSFUL
+  FAILED
+  EXPIRED
+}
+
+enum Network {
+  MTN
+  ORANGE
+}
+
+model Admin {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  email        String      @unique
+  passwordHash String
+  role         AdminRole   @default(ADMIN)
+  accessLevel  AccessLevel @default(READ_ONLY)
+  isActive     Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  withdrawals Withdrawal[]
+  statusLogs  StatusLog[]
+  auditLogs   AuditLog[]
+}
+
+model Category {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  slug           String   @unique
+  description    String?
+  price          Int
+  images         String[]
+  isActive       Boolean  @default(true)
+  displayOrder   Int      @default(0)
+  statusPipeline String[] @default(["Received"])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  payments Payment[]
+}
+
+model Payment {
+  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  categoryId       String        @db.ObjectId
+  category         Category      @relation(fields: [categoryId], references: [id])
+
+  payerName        String
+  payerEmail       String
+  payerPhone       String
+  network          Network
+
+  amount           Int
+  currency         String        @default("XAF")
+
+  externalId       String        @unique
+  fapshiTransId    String?       @unique
+  financialTransId String?
+
+  status           PaymentStatus @default(INITIATED)
+  fulfillmentStatus String?
+
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  confirmedAt      DateTime?
+
+  statusLogs StatusLog[]
+}
+
+model StatusLog {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  paymentId   String   @db.ObjectId
+  payment     Payment  @relation(fields: [paymentId], references: [id])
+  fromStatus  String?
+  toStatus    String
+  changedById String   @db.ObjectId
+  changedBy   Admin    @relation(fields: [changedById], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model Withdrawal {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  amount      Int
+  note        String?
+  reference   String?
+  createdById String   @db.ObjectId
+  createdBy   Admin    @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model Settings {
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  notificationEmails String[]
+  orgName            String   @default("Open Dreams")
+  updatedAt          DateTime @updatedAt
+}
+
+model AuditLog {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  adminId    String   @db.ObjectId
+  admin      Admin    @relation(fields: [adminId], references: [id])
+  action     String
+  targetType String
+  targetId   String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+}
