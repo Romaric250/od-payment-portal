@@ -51,6 +51,7 @@ export async function GET(request: Request) {
         where,
         include: {
           category: { select: { id: true, name: true, slug: true, statusPipeline: true } },
+          formResponses: { select: { fieldKey: true, value: true } },
         },
         orderBy: { createdAt: "desc" },
         skip,

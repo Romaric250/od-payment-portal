@@ -5,6 +5,18 @@ import {
 } from "@uploadthing/react";
 import type { OurFileRouter } from "@/app/api/uploadthing/core";
 
-export const UploadButton = generateUploadButton<OurFileRouter>();
-export const UploadDropzone = generateUploadDropzone<OurFileRouter>();
-export const { useUploadThing } = generateReactHelpers<OurFileRouter>();
+const uploadthingFetch: typeof fetch = (input, init) =>
+  fetch(input, {
+    ...init,
+    credentials: "include",
+  });
+
+export const UploadButton = generateUploadButton<OurFileRouter>({
+  fetch: uploadthingFetch,
+});
+export const UploadDropzone = generateUploadDropzone<OurFileRouter>({
+  fetch: uploadthingFetch,
+});
+export const { useUploadThing } = generateReactHelpers<OurFileRouter>({
+  fetch: uploadthingFetch,
+});

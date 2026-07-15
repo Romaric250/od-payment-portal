@@ -16,6 +16,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const category = await prisma.category.findFirst({
     where: { slug: params.slug, isActive: true },
+    include: {
+      formFields: { orderBy: { order: "asc" } },
+    },
   });
 
   if (!category) {
@@ -44,6 +47,9 @@ export default async function PayPage({
 }) {
   const category = await prisma.category.findFirst({
     where: { slug: params.slug, isActive: true },
+    include: {
+      formFields: { orderBy: { order: "asc" } },
+    },
   });
 
   if (!category) notFound();
@@ -75,13 +81,35 @@ export default async function PayPage({
             )}
             <p className="mt-4 text-2xl font-semibold text-od-orange">
               {formatCurrency(category.price)}
+              {(category.categoryType === "TSHIRT" ||
+                category.formFields.some((f) => f.affectsPrice)) &&
+                " each"}
             </p>
+            {category.allowCustomAmount && (
+              <p className="mt-1 text-sm text-od-text-muted">
+                Custom amounts from {formatCurrency(category.minimumAmount ?? 100)} available
+                at checkout
+              </p>
+            )}
           </div>
           <CheckoutForm
             category={{
               slug: category.slug,
               name: category.name,
               price: category.price,
+              categoryType: category.categoryType,
+              allowCustomAmount: category.allowCustomAmount,
+              minimumAmount: category.minimumAmount,
+              formFields: category.formFields.map((field) => ({
+                id: field.id,
+                label: field.label,
+                key: field.key,
+                type: field.type,
+                required: field.required,
+                options: field.options,
+                order: field.order,
+                affectsPrice: field.affectsPrice,
+              })),
             }}
           />
         </div>

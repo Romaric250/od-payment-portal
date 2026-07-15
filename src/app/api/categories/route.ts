@@ -14,6 +14,22 @@ export async function GET() {
       description: true,
       price: true,
       images: true,
+      allowCustomAmount: true,
+      minimumAmount: true,
+      categoryType: true,
+      formFields: {
+        orderBy: { order: "asc" },
+        select: {
+          id: true,
+          label: true,
+          key: true,
+          type: true,
+          required: true,
+          options: true,
+          order: true,
+          affectsPrice: true,
+        },
+      },
     },
   });
 

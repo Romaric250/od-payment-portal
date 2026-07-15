@@ -23,6 +23,27 @@ interface DashboardStats {
   totalWithdrawn: number;
   balance: number;
   revenueByCategory: { name: string; amount: number }[];
+  categorySummaries: Array<{
+    categoryId: string;
+    name: string;
+    totalPayments: number;
+    successfulPayments: number;
+    pendingPayments: number;
+    expenses: number;
+    netBalance: number;
+  }>;
+  expenseSummary: {
+    totalExpenses: number;
+    pendingExpenses: number;
+    handledExpenses: number;
+    approvedExpenses: number;
+    counts: {
+      total: number;
+      pending: number;
+      approved: number;
+      handled: number;
+    };
+  };
   recentTransactions: Array<{
     id: string;
     payerName: string;
@@ -34,6 +55,7 @@ interface DashboardStats {
     fulfillmentStatus: string | null;
     createdAt: string;
     category: { name: string; statusPipeline: string[] };
+    formResponses?: Array<{ fieldKey: string; value: string }>;
   }>;
   counts: { successful: number; pending: number; failed: number };
 }
@@ -85,7 +107,7 @@ export default function AdminDashboardPage() {
       <div>
         <h1 className="text-2xl font-bold text-od-navy">Overview</h1>
         <p className="text-sm text-od-text-muted">
-          Revenue, balance, and recent activity
+          Revenue, balance, expenses, and recent activity
         </p>
       </div>
 
@@ -99,6 +121,58 @@ export default function AdminDashboardPage() {
           description={`${stats.counts.pending} pending · ${stats.counts.failed} failed`}
         />
       </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCardCurrency
+          title="Total Expenses"
+          amount={stats.expenseSummary.totalExpenses}
+        />
+        <StatCardCurrency
+          title="Pending Expenses"
+          amount={stats.expenseSummary.pendingExpenses}
+        />
+        <StatCardCurrency
+          title="Handled Expenses"
+          amount={stats.expenseSummary.handledExpenses}
+        />
+        <StatCard
+          title="Expense Records"
+          value={String(stats.expenseSummary.counts.total)}
+          description={`${stats.expenseSummary.counts.pending} pending · ${stats.expenseSummary.counts.handled} handled`}
+        />
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Category Summary</CardTitle>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead className="border-b border-od-border text-left text-od-text-muted">
+              <tr>
+                <th className="px-3 py-2 font-medium">Category</th>
+                <th className="px-3 py-2 font-medium">Payments</th>
+                <th className="px-3 py-2 font-medium">Successful</th>
+                <th className="px-3 py-2 font-medium">Pending</th>
+                <th className="px-3 py-2 font-medium">Expenses</th>
+                <th className="px-3 py-2 font-medium">Net Balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              {stats.categorySummaries.map((row) => (
+                <tr key={row.categoryId} className="border-b border-od-border last:border-0">
+                  <td className="px-3 py-2 font-medium">{row.name}</td>
+                  <td className="px-3 py-2">{row.totalPayments}</td>
+                  <td className="px-3 py-2">{row.successfulPayments}</td>
+                  <td className="px-3 py-2">{row.pendingPayments}</td>
+                  <td className="px-3 py-2">{formatCurrency(row.expenses)}</td>
+                  <td className="px-3 py-2 font-medium">{formatCurrency(row.netBalance)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 xl:grid-cols-2">
         <Card>

@@ -30,6 +30,31 @@ enum Network {
   ORANGE
 }
 
+enum CategoryType {
+  STANDARD
+  TSHIRT
+  DONATION
+  EVENT
+  SCHOLARSHIP
+}
+
+enum FormFieldType {
+  TEXT
+  EMAIL
+  PHONE
+  NUMBER
+  DATE
+  SELECT
+  MULTI_SELECT
+  TEXTAREA
+}
+
+enum ExpenseStatus {
+  PENDING
+  APPROVED
+  HANDLED
+}
+
 model Admin {
   id           String      @id @default(auto()) @map("_id") @db.ObjectId
   name         String
@@ -44,22 +69,44 @@ model Admin {
   withdrawals Withdrawal[]
   statusLogs  StatusLog[]
   auditLogs   AuditLog[]
+  expenses    Expense[]
 }
 
 model Category {
-  id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  name           String
-  slug           String   @unique
-  description    String?
-  price          Int
-  images         String[]
-  isActive       Boolean  @default(true)
-  displayOrder   Int      @default(0)
-  statusPipeline String[] @default(["Received"])
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id               String       @id @default(auto()) @map("_id") @db.ObjectId
+  name             String
+  slug             String       @unique
+  description      String?
+  price            Int
+  images           String[]
+  isActive         Boolean      @default(true)
+  displayOrder     Int          @default(0)
+  statusPipeline   String[]     @default(["Received"])
+  allowCustomAmount Boolean     @default(false)
+  minimumAmount    Int?
+  categoryType     CategoryType @default(STANDARD)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
 
-  payments Payment[]
+  payments   Payment[]
+  formFields FormField[]
+  expenses   Expense[]
+}
+
+model FormField {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  categoryId   String        @db.ObjectId
+  category     Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  label        String
+  key          String
+  type         FormFieldType
+  required     Boolean       @default(false)
+  options      String[]      @default([])
+  order        Int           @default(0)
+  affectsPrice Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+
+  @@unique([categoryId, key])
 }
 
 model Payment {
@@ -86,7 +133,34 @@ model Payment {
   updatedAt        DateTime      @updatedAt
   confirmedAt      DateTime?
 
-  statusLogs StatusLog[]
+  statusLogs     StatusLog[]
+  formResponses  PaymentFormResponse[]
+}
+
+model PaymentFormResponse {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  paymentId String   @db.ObjectId
+  payment   Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  fieldKey  String
+  value     String
+  createdAt DateTime @default(now())
+
+  @@index([paymentId])
+}
+
+model Expense {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  categoryId  String?       @db.ObjectId
+  category    Category?     @relation(fields: [categoryId], references: [id])
+  title       String
+  description String?
+  amount      Int
+  status      ExpenseStatus @default(PENDING)
+  createdById String        @db.ObjectId
+  createdBy   Admin         @relation(fields: [createdById], references: [id])
+  handledAt   DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 }
 
 model StatusLog {

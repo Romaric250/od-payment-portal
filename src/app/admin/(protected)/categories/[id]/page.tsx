@@ -1,12 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { CategoryForm } from "@/components/admin/category-form";
 import { StatCard, StatCardCurrency } from "@/components/admin/stat-card";
 import { AdminPageLoading } from "@/components/admin/admin-loading";
 import { TransactionsTable } from "@/components/admin/transactions-table";
 import { Input } from "@/components/ui/input";
+import type { FormFieldInput } from "@/lib/validators";
 
 interface CategoryDetailPageProps {
   params: { id: string };
@@ -26,6 +28,10 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
     isActive: boolean;
     displayOrder: number;
     statusPipeline: string[];
+    allowCustomAmount: boolean;
+    minimumAmount: number | null;
+    categoryType: string;
+    formFields: FormFieldInput[];
   } | null>(null);
 
   const [stats, setStats] = useState<{
@@ -38,6 +44,14 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
     };
     fulfillmentBreakdown: Record<string, number>;
     averageOrderValue: number;
+    totalExpenses: number;
+    netBalance: number;
+    expenseCounts: {
+      total: number;
+      pending: number;
+      approved: number;
+      handled: number;
+    };
   } | null>(null);
 
   const [transactions, setTransactions] = useState<
@@ -51,6 +65,7 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
       status: string;
       fulfillmentStatus: string | null;
       createdAt: string;
+      formResponses?: Array<{ fieldKey: string; value: string }>;
       category: {
         id: string;
         name: string;
@@ -106,9 +121,16 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-od-navy">{category.name}</h1>
-        <p className="text-sm text-od-text-muted">Category workspace</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-od-navy">{category.name}</h1>
+          <p className="text-sm text-od-text-muted">
+            {category.categoryType} · Category workspace
+          </p>
+        </div>
+        <Link href="/admin/expenses" className="text-sm text-od-orange">
+          View expenses
+        </Link>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -118,16 +140,8 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
           value={`${stats.statusCounts.total}`}
           description={`${stats.statusCounts.successful} successful · ${stats.statusCounts.pending} pending · ${stats.statusCounts.failed} failed`}
         />
-        <StatCardCurrency
-          title="Average Order"
-          amount={stats.averageOrderValue}
-        />
-        <StatCard
-          title="Fulfillment"
-          value={Object.entries(stats.fulfillmentBreakdown)
-            .map(([k, v]) => `${k}: ${v}`)
-            .join(" · ") || "—"}
-        />
+        <StatCardCurrency title="Expenses" amount={stats.totalExpenses} />
+        <StatCardCurrency title="Net Balance" amount={stats.netBalance} />
       </div>
 
       <CategoryForm initialData={category} />
@@ -147,6 +161,7 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
           canWrite={canWrite}
           onStatusChange={handleStatusChange}
           showCategory={false}
+          showFormResponses
         />
       </div>
     </div>

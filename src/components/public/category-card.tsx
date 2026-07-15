@@ -12,6 +12,9 @@ interface CategoryCardProps {
     description: string | null;
     price: number;
     images: string[];
+    categoryType?: string;
+    allowCustomAmount?: boolean;
+    minimumAmount?: number | null;
   };
 }
 
@@ -38,6 +41,9 @@ export function CategoryCard({ category }: CategoryCardProps) {
       <CardContent className="flex items-center justify-between gap-4">
         <p className="text-lg font-semibold text-od-navy">
           {formatCurrency(category.price)}
+          {category.categoryType === "TSHIRT" && (
+            <span className="text-sm font-normal text-od-text-muted"> each</span>
+          )}
         </p>
         <Button asChild>
           <Link href={`/pay/${category.slug}`}>Pay</Link>

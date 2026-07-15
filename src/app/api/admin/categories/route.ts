@@ -6,8 +6,10 @@ import {
   requireWrite,
 } from "@/lib/permissions";
 import { categorySchema } from "@/lib/validators";
+import { formatZodError, formatZodFieldErrors } from "@/lib/validators/format";
 import { slugify } from "@/lib/utils";
 import { createAuditLog } from "@/lib/audit";
+import { categoryInclude, syncCategoryFormFields } from "@/lib/categories";
 
 export const dynamic = "force-dynamic";
 
@@ -20,9 +22,7 @@ export async function GET() {
 
     const categories = await prisma.category.findMany({
       orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
-      include: {
-        _count: { select: { payments: true } },
-      },
+      include: categoryInclude,
     });
 
     return NextResponse.json(categories);
@@ -39,12 +39,16 @@ export async function POST(request: Request) {
 
     if (!parsed.success) {
       return NextResponse.json(
-        { error: parsed.error.issues[0]?.message ?? "Invalid input" },
+        {
+          error: formatZodError(parsed.error),
+          fields: formatZodFieldErrors(parsed.error),
+        },
         { status: 400 }
       );
     }
 
-    const slug = parsed.data.slug || slugify(parsed.data.name);
+    const { formFields, ...categoryData } = parsed.data;
+    const slug = categoryData.slug || slugify(categoryData.name);
 
     const existing = await prisma.category.findUnique({ where: { slug } });
     if (existing) {
@@ -55,7 +59,14 @@ export async function POST(request: Request) {
     }
 
     const category = await prisma.category.create({
-      data: { ...parsed.data, slug },
+      data: { ...categoryData, slug },
+    });
+
+    await syncCategoryFormFields(category.id, formFields);
+
+    const fullCategory = await prisma.category.findUnique({
+      where: { id: category.id },
+      include: categoryInclude,
     });
 
     await createAuditLog({
@@ -66,7 +77,7 @@ export async function POST(request: Request) {
       metadata: { name: category.name },
     });
 
-    return NextResponse.json(category, { status: 201 });
+    return NextResponse.json(fullCategory, { status: 201 });
   } catch (error) {
     return authErrorResponse(error);
   }

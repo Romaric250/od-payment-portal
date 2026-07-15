@@ -6,8 +6,10 @@ import {
   requireAuth,
   requireWrite,
 } from "@/lib/permissions";
-import { categorySchema } from "@/lib/validators";
+import { categoryUpdateSchema } from "@/lib/validators";
+import { formatZodError, formatZodFieldErrors } from "@/lib/validators/format";
 import { createAuditLog } from "@/lib/audit";
+import { categoryInclude, syncCategoryFormFields } from "@/lib/categories";
 
 export const dynamic = "force-dynamic";
 
@@ -20,9 +22,7 @@ export async function GET(
 
     const category = await prisma.category.findUnique({
       where: { id: params.id },
-      include: {
-        _count: { select: { payments: true } },
-      },
+      include: categoryInclude,
     });
 
     if (!category) {
@@ -42,11 +42,14 @@ export async function PATCH(
   try {
     const session = requireWrite(await getAdminSession());
     const body = await request.json();
-    const parsed = categorySchema.partial().safeParse(body);
+    const parsed = categoryUpdateSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
-        { error: parsed.error.issues[0]?.message ?? "Invalid input" },
+        {
+          error: formatZodError(parsed.error),
+          fields: formatZodFieldErrors(parsed.error),
+        },
         { status: 400 }
       );
     }
@@ -63,16 +66,27 @@ export async function PATCH(
       }
     }
 
-    const category = await prisma.category.update({
+    const { formFields, ...categoryData } = parsed.data;
+
+    await prisma.category.update({
       where: { id: params.id },
-      data: parsed.data,
+      data: categoryData,
+    });
+
+    if (formFields !== undefined) {
+      await syncCategoryFormFields(params.id, formFields);
+    }
+
+    const category = await prisma.category.findUnique({
+      where: { id: params.id },
+      include: categoryInclude,
     });
 
     await createAuditLog({
       admin: session,
       action: "CATEGORY_UPDATED",
       targetType: "Category",
-      targetId: category.id,
+      targetId: params.id,
       metadata: parsed.data,
     });
 
@@ -103,6 +117,7 @@ export async function DELETE(
       );
     }
 
+    await prisma.formField.deleteMany({ where: { categoryId: params.id } });
     await prisma.category.delete({ where: { id: params.id } });
 
     await createAuditLog({

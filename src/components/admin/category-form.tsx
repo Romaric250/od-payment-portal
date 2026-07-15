@@ -1,16 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { CategoryImageUpload } from "@/components/admin/category-image-upload";
+import { FormFieldEditor } from "@/components/admin/form-field-editor";
 import { slugify } from "@/lib/utils";
+import type { FormFieldInput } from "@/lib/validators";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface CategoryFormProps {
@@ -24,8 +32,20 @@ interface CategoryFormProps {
     isActive: boolean;
     displayOrder: number;
     statusPipeline: string[];
+    allowCustomAmount?: boolean;
+    minimumAmount?: number | null;
+    categoryType?: string;
+    formFields?: FormFieldInput[];
   };
 }
+
+const CATEGORY_TYPES = [
+  { value: "STANDARD", label: "Standard" },
+  { value: "TSHIRT", label: "T-Shirt" },
+  { value: "DONATION", label: "Donation" },
+  { value: "EVENT", label: "Event" },
+  { value: "SCHOLARSHIP", label: "Scholarship" },
+];
 
 export function CategoryForm({ initialData }: CategoryFormProps) {
   const router = useRouter();
@@ -44,6 +64,18 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
   );
   const [statusPipeline, setStatusPipeline] = useState<string[]>(
     initialData?.statusPipeline ?? ["Received"]
+  );
+  const [allowCustomAmount, setAllowCustomAmount] = useState(
+    initialData?.allowCustomAmount ?? false
+  );
+  const [minimumAmount, setMinimumAmount] = useState(
+    String(initialData?.minimumAmount ?? "")
+  );
+  const [categoryType, setCategoryType] = useState(
+    initialData?.categoryType ?? "STANDARD"
+  );
+  const [formFields, setFormFields] = useState<FormFieldInput[]>(
+    initialData?.formFields ?? []
   );
   const [newStatus, setNewStatus] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -74,15 +106,67 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
     setLoading(true);
     setError(null);
 
+    const trimmedDescription = description.trim();
+    if (trimmedDescription.length > 2000) {
+      setError("Description must be 2000 characters or less");
+      setLoading(false);
+      return;
+    }
+
+    const parsedPrice = parseInt(price, 10);
+    if (!Number.isFinite(parsedPrice) || parsedPrice < 100) {
+      setError("Price must be at least 100 XAF");
+      setLoading(false);
+      return;
+    }
+
+    const parsedDisplayOrder = parseInt(displayOrder, 10);
+    if (!Number.isFinite(parsedDisplayOrder) || parsedDisplayOrder < 0) {
+      setError("Display order must be zero or greater");
+      setLoading(false);
+      return;
+    }
+
+    for (const field of formFields) {
+      if (field.key.length < 2) {
+        setError(`Field "${field.label}" needs a key with at least 2 characters (e.g. size, colour)`);
+        setLoading(false);
+        return;
+      }
+      if (
+        (field.type === "SELECT" || field.type === "MULTI_SELECT") &&
+        field.options.filter((option) => option.trim()).length === 0
+      ) {
+        setError(`${field.label} needs at least one option`);
+        setLoading(false);
+        return;
+      }
+    }
+
     const payload = {
-      name,
-      slug,
-      description: description || null,
-      price: parseInt(price, 10),
+      name: name.trim(),
+      slug: slug.trim(),
+      description: trimmedDescription || null,
+      price: parsedPrice,
       images,
       isActive,
-      displayOrder: parseInt(displayOrder, 10) || 0,
-      statusPipeline,
+      displayOrder: parsedDisplayOrder,
+      statusPipeline: statusPipeline.map((status) => status.trim()).filter(Boolean),
+      allowCustomAmount,
+      minimumAmount: allowCustomAmount
+        ? parseInt(minimumAmount, 10) || null
+        : null,
+      categoryType,
+      formFields: formFields.map((field, index) => ({
+        ...(field.id ? { id: field.id } : {}),
+        label: field.label.trim(),
+        key: field.key.trim(),
+        type: field.type,
+        required: field.required,
+        order: index,
+        options: field.options.map((option) => option.trim()).filter(Boolean),
+        affectsPrice: field.affectsPrice,
+      })),
     };
 
     try {
@@ -98,7 +182,15 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
       );
 
       const result = await res.json();
-      if (!res.ok) throw new Error(result.error ?? "Save failed");
+      if (!res.ok) {
+        const detail =
+          result.fields && typeof result.fields === "object"
+            ? Object.entries(result.fields as Record<string, string>)
+                .map(([field, message]) => `${field}: ${message}`)
+                .join(" · ")
+            : null;
+        throw new Error(detail || result.error || "Save failed");
+      }
 
       router.push(`/admin/categories/${result.id}`);
       router.refresh();
@@ -114,8 +206,40 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
       <CardHeader>
         <CardTitle>{isEdit ? "Edit Category" : "New Category"}</CardTitle>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <CardContent className="space-y-6">
+        <div className="space-y-3">
+          <Label>Images</Label>
+          {images.length > 0 ? (
+            <div className="flex flex-wrap gap-3">
+              {images.map((url) => (
+                <div key={url} className="relative h-20 w-28 overflow-hidden rounded-lg border bg-white">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt="" className="h-full w-full object-contain p-1" />
+                  {canWrite && (
+                    <button
+                      type="button"
+                      className="absolute right-1 top-1 rounded bg-white/90 px-1 text-xs shadow"
+                      onClick={() => setImages((current) => current.filter((i) => i !== url))}
+                      aria-label="Remove image"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-od-text-muted">No images uploaded yet.</p>
+          )}
+          {canWrite && (
+            <CategoryImageUpload
+              onComplete={(urls) => setImages((current) => [...current, ...urls])}
+              onError={(message) => setError(message)}
+            />
+          )}
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>
@@ -140,18 +264,29 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="description">Description</Label>
+              <span
+                className={`text-xs ${
+                  description.length > 2000 ? "text-od-error" : "text-od-text-muted"
+                }`}
+              >
+                {description.length}/2000
+              </span>
+            </div>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               disabled={!canWrite}
+              maxLength={2000}
+              rows={4}
             />
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="price">Price (XAF)</Label>
+              <Label htmlFor="price">Base price (XAF)</Label>
               <Input
                 id="price"
                 type="number"
@@ -172,6 +307,50 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
                 disabled={!canWrite}
               />
             </div>
+            <div className="space-y-2">
+              <Label>Category type</Label>
+              <Select
+                value={categoryType}
+                disabled={!canWrite}
+                onValueChange={setCategoryType}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORY_TYPES.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-3 rounded-xl border border-od-border p-4">
+            <div className="flex items-center gap-3">
+              <Switch
+                checked={allowCustomAmount}
+                onCheckedChange={setAllowCustomAmount}
+                disabled={!canWrite}
+              />
+              <Label>Allow custom payment amount</Label>
+            </div>
+            {allowCustomAmount && (
+              <div className="space-y-2">
+                <Label htmlFor="minimumAmount">Minimum amount (XAF)</Label>
+                <Input
+                  id="minimumAmount"
+                  type="number"
+                  min={100}
+                  value={minimumAmount}
+                  onChange={(e) => setMinimumAmount(e.target.value)}
+                  disabled={!canWrite}
+                  required
+                />
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
@@ -184,29 +363,22 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
           </div>
 
           <div className="space-y-3">
-            <Label>Images</Label>
-            <div className="flex flex-wrap gap-3">
-              {images.map((url) => (
-                <div key={url} className="relative h-20 w-28 overflow-hidden rounded-lg border bg-white">
-                  <Image src={url} alt="" fill className="object-contain p-1" />
-                  {canWrite && (
-                    <button
-                      type="button"
-                      className="absolute right-1 top-1 rounded bg-white/90 px-1 text-xs"
-                      onClick={() => setImages(images.filter((i) => i !== url))}
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-            {canWrite && (
-              <CategoryImageUpload
-                onComplete={(urls) => setImages([...images, ...urls])}
-                onError={(message) => setError(message)}
-              />
+            <Label>Custom form fields</Label>
+            {categoryType === "TSHIRT" && (
+              <p className="text-sm text-od-text-muted">
+                T-shirt categories include a quantity selector at checkout. Price is
+                calculated as unit price × quantity.
+              </p>
             )}
+            <p className="text-sm text-od-text-muted">
+              Add extra questions for checkout (e.g. size). Name, email, and phone
+              are always collected automatically.
+            </p>
+            <FormFieldEditor
+              fields={formFields}
+              onChange={setFormFields}
+              disabled={!canWrite}
+            />
           </div>
 
           <div className="space-y-3">

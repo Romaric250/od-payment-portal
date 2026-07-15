@@ -1,23 +1,32 @@
 import { createUploadthing, type FileRouter } from "uploadthing/next";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { UploadThingError } from "uploadthing/server";
+import { getToken } from "next-auth/jwt";
 
 const f = createUploadthing();
 
 export const ourFileRouter = {
-  categoryImage: f({
-    image: { maxFileSize: "4MB", maxFileCount: 5 },
-  })
-    .middleware(async () => {
-      const session = await getServerSession(authOptions);
-      if (!session?.user?.id) throw new Error("Unauthorized");
-      if (session.user.accessLevel !== "READ_WRITE") {
-        throw new Error("Read-only admins cannot upload images");
+  categoryImage: f(
+    { image: { maxFileSize: "4MB", maxFileCount: 5 } },
+    { awaitServerData: false }
+  )
+    .middleware(async ({ req }) => {
+      const token = await getToken({
+        req,
+        secret: process.env.NEXTAUTH_SECRET,
+      });
+
+      if (!token?.id) {
+        throw new UploadThingError("You must be signed in to upload images");
       }
-      return { adminId: session.user.id };
+
+      if (token.accessLevel !== "READ_WRITE") {
+        throw new UploadThingError("Read-only admins cannot upload images");
+      }
+
+      return { adminId: token.id as string };
     })
     .onUploadComplete(async ({ file }) => {
-      return { url: file.ufsUrl };
+      return { url: file.ufsUrl ?? file.url };
     }),
 } satisfies FileRouter;
 

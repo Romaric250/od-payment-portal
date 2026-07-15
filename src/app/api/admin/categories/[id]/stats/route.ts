@@ -19,17 +19,24 @@ export async function GET(
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    const payments = await prisma.payment.findMany({
-      where: { categoryId: params.id },
-      select: {
-        status: true,
-        amount: true,
-        fulfillmentStatus: true,
-      },
-    });
+    const [payments, expenses] = await Promise.all([
+      prisma.payment.findMany({
+        where: { categoryId: params.id },
+        select: {
+          status: true,
+          amount: true,
+          fulfillmentStatus: true,
+        },
+      }),
+      prisma.expense.findMany({
+        where: { categoryId: params.id },
+        select: { amount: true, status: true },
+      }),
+    ]);
 
     const successful = payments.filter((p) => p.status === "SUCCESSFUL");
     const totalCollected = successful.reduce((sum, p) => sum + p.amount, 0);
+    const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
 
     const fulfillmentBreakdown: Record<string, number> = {};
     for (const status of category.statusPipeline) {
@@ -61,6 +68,14 @@ export async function GET(
       statusCounts,
       fulfillmentBreakdown,
       averageOrderValue,
+      totalExpenses,
+      netBalance: totalCollected - totalExpenses,
+      expenseCounts: {
+        total: expenses.length,
+        pending: expenses.filter((e) => e.status === "PENDING").length,
+        approved: expenses.filter((e) => e.status === "APPROVED").length,
+        handled: expenses.filter((e) => e.status === "HANDLED").length,
+      },
     });
   } catch (error) {
     return authErrorResponse(error);

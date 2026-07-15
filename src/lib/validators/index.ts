@@ -28,6 +28,7 @@ export const cameroonPhoneSchema = z
     message: "Enter a valid Cameroon mobile number (e.g. 670000000)",
   });
 
+/** Legacy checkout — used when category has no custom form fields */
 export const checkoutSchema = z
   .object({
     categorySlug: z.string().min(1),
@@ -47,22 +48,39 @@ export const checkoutSchema = z
     }
   });
 
-export const categorySchema = z.object({
-  name: z.string().min(2).max(120),
-  slug: z
-    .string()
-    .min(2)
-    .max(120)
-    .regex(/^[a-z0-9-]+$/, "Slug must be lowercase letters, numbers, and hyphens"),
-  description: z.string().max(2000).optional().nullable(),
-  price: z.number().int().min(100, "Minimum price is 100 XAF"),
-  images: z.array(z.string().url()).default([]),
-  isActive: z.boolean().default(true),
-  displayOrder: z.number().int().default(0),
-  statusPipeline: z
-    .array(z.string().min(1).max(80))
-    .min(1, "At least one fulfillment status is required"),
-});
+/** Extended checkout — dynamic fields plus required payer details */
+export const dynamicCheckoutSchema = z
+  .object({
+    categorySlug: z.string().min(1),
+    network: z.enum(["MTN", "ORANGE"]),
+    payerName: z.string().min(2, "Name is required").max(100),
+    payerEmail: z.string().email("Valid email is required"),
+    payerPhone: cameroonPhoneSchema,
+    customAmount: z.number().int().min(100).optional(),
+    formResponses: z.record(z.string(), z.string()).default({}),
+  })
+  .superRefine((data, ctx) => {
+    const detected = detectNetwork(data.payerPhone);
+    if (detected && detected !== data.network) {
+      ctx.addIssue({
+        code: "custom",
+        message: `This number appears to be ${detected === "MTN" ? "MTN" : "Orange Money"}. Please select the correct network.`,
+        path: ["network"],
+      });
+    }
+  });
+
+export {
+  categorySchema,
+  categoryUpdateSchema,
+  formFieldSchema,
+  expenseSchema,
+  expenseUpdateSchema,
+  categoryTypes,
+  formFieldTypes,
+  expenseStatuses,
+} from "@/lib/validators/category";
+export type { CategoryInput, FormFieldInput, ExpenseInput } from "@/lib/validators/category";
 
 export const withdrawalSchema = z.object({
   amount: z.number().int().min(100),
@@ -101,4 +119,4 @@ export const loginSchema = z.object({
 });
 
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
-export type CategoryInput = z.infer<typeof categorySchema>;
+export type DynamicCheckoutInput = z.infer<typeof dynamicCheckoutSchema>;

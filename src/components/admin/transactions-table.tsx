@@ -20,6 +20,7 @@ interface Transaction {
   status: string;
   fulfillmentStatus: string | null;
   createdAt: string;
+  formResponses?: Array<{ fieldKey: string; value: string }>;
   category: {
     id: string;
     name: string;
@@ -32,6 +33,7 @@ interface TransactionsTableProps {
   canWrite: boolean;
   onStatusChange?: (paymentId: string, status: string) => Promise<void>;
   showCategory?: boolean;
+  showFormResponses?: boolean;
 }
 
 function statusVariant(status: string) {
@@ -54,6 +56,7 @@ export function TransactionsTable({
   canWrite,
   onStatusChange,
   showCategory = true,
+  showFormResponses = false,
 }: TransactionsTableProps) {
   if (transactions.length === 0) {
     return (
@@ -83,6 +86,15 @@ export function TransactionsTable({
               <td className="px-4 py-3">
                 <p className="font-medium text-od-text">{tx.payerName}</p>
                 <p className="text-xs text-od-text-muted">{tx.payerPhone}</p>
+                {showFormResponses && tx.formResponses && tx.formResponses.length > 0 && (
+                  <div className="mt-1 space-y-0.5">
+                    {tx.formResponses.map((response) => (
+                      <p key={response.fieldKey} className="text-xs text-od-text-muted">
+                        {response.fieldKey}: {response.value}
+                      </p>
+                    ))}
+                  </div>
+                )}
               </td>
               {showCategory && (
                 <td className="px-4 py-3">{tx.category.name}</td>
