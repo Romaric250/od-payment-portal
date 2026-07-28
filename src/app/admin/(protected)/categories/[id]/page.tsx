@@ -25,6 +25,8 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
   const [category, setCategory] = useState<CategoryEditData | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const [stats, setStats] = useState<{
     totalCollected: number;
@@ -104,22 +106,31 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
 
     if (!res.ok) {
       const result = await res.json();
-      window.alert(result.error ?? "Could not confirm payment");
+      setActionError(result.error ?? "Could not confirm payment.");
       return;
     }
 
+    setActionError(null);
     await loadData();
   }
 
   async function handleExport() {
     setExporting(true);
+    setExportError(null);
+
     try {
       const res = await fetch(
         `/api/admin/transactions/export?categoryId=${params.id}&status=SUCCESSFUL`
       );
+
       if (!res.ok) {
-        throw new Error("Export failed");
+        const result = await res.json().catch(() => null);
+        setExportError(
+          result?.error ?? "Unable to generate the export file. Please try again."
+        );
+        return;
       }
+
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
@@ -128,7 +139,7 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
       anchor.click();
       URL.revokeObjectURL(url);
     } catch {
-      window.alert("Could not export transactions. Please try again.");
+      setExportError("Unable to generate the export file. Please try again.");
     } finally {
       setExporting(false);
     }
@@ -178,6 +189,12 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
           </Button>
         </div>
       </div>
+
+      {(exportError || actionError) && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-od-error">
+          {exportError ?? actionError}
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCardCurrency title="Total Collected" amount={stats.totalCollected} />

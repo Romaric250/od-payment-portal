@@ -1,9 +1,12 @@
 import fs from "fs";
 import path from "path";
-import PDFDocument from "pdfkit";
+import { createRequire } from "node:module";
 import type PDFKit from "pdfkit";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { siteConfig } from "@/lib/site";
+
+const require = createRequire(import.meta.url);
+const PDFDocument = require("pdfkit") as typeof import("pdfkit");
 
 export interface ExportableTransaction {
   createdAt: Date | string;
@@ -38,7 +41,29 @@ const BRAND = {
   success: "#12B76A",
 };
 
-const LOGO_PATH = path.join(process.cwd(), "public", "odlogo.png");
+const LOGO_CANDIDATES = [
+  path.join(process.cwd(), "public", "odlogo.png"),
+  path.join(process.cwd(), "assets", "odlogo.png"),
+];
+
+async function loadLogoBuffer(): Promise<Buffer | null> {
+  for (const candidate of LOGO_CANDIDATES) {
+    if (fs.existsSync(candidate)) {
+      return fs.readFileSync(candidate);
+    }
+  }
+
+  try {
+    const response = await fetch(siteConfig.logoUrl);
+    if (response.ok) {
+      return Buffer.from(await response.arrayBuffer());
+    }
+  } catch {
+    // Logo is optional; report still exports without it.
+  }
+
+  return null;
+}
 
 const PAGE = {
   margin: 36,
@@ -106,17 +131,18 @@ function drawHeader(
   pageWidth: number,
   options: PdfExportOptions,
   transactionCount: number,
-  totalAmount: number
+  totalAmount: number,
+  logoBuffer: Buffer | null
 ) {
   const headerHeight = 88;
   doc.save();
   doc.rect(0, 0, pageWidth, headerHeight).fill(BRAND.navy);
 
-  if (fs.existsSync(LOGO_PATH)) {
-    doc.image(LOGO_PATH, PAGE.margin, 18, { width: 52, height: 52 });
+  if (logoBuffer) {
+    doc.image(logoBuffer, PAGE.margin, 18, { width: 52, height: 52 });
   }
 
-  const textX = PAGE.margin + (fs.existsSync(LOGO_PATH) ? 64 : 0);
+  const textX = PAGE.margin + (logoBuffer ? 64 : 0);
   doc
     .fillColor(BRAND.white)
     .font("Helvetica-Bold")
@@ -130,7 +156,7 @@ function drawHeader(
 
   const exportedAt = options.exportedAt ?? new Date();
   const reportTitle = options.categoryName
-    ? `Successful payments — ${options.categoryName}`
+    ? `Successful payments - ${options.categoryName}`
     : "Successful payments report";
 
   doc
@@ -302,6 +328,8 @@ export async function transactionsToPdf(
   transactions: ExportableTransaction[],
   options: PdfExportOptions = {}
 ): Promise<Buffer> {
+  const logoBuffer = await loadLogoBuffer();
+
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({
       size: "A4",
@@ -310,7 +338,7 @@ export async function transactionsToPdf(
       bufferPages: true,
       info: {
         Title: options.categoryName
-          ? `${options.categoryName} — Successful Payments`
+          ? `${options.categoryName} - Successful Payments`
           : "Successful Payments Report",
         Author: siteConfig.name,
       },
@@ -327,7 +355,14 @@ export async function transactionsToPdf(
     const contentBottom = pageHeight - PAGE.margin - PAGE.footerHeight;
     const totalAmount = transactions.reduce((sum, tx) => sum + tx.amount, 0);
 
-    let y = drawHeader(doc, pageWidth, options, transactions.length, totalAmount);
+    let y = drawHeader(
+      doc,
+      pageWidth,
+      options,
+      transactions.length,
+      totalAmount,
+      logoBuffer
+    );
 
     if (transactions.length === 0) {
       doc

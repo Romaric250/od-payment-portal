@@ -8,6 +8,15 @@ const nextConfig = {
       { protocol: "https", hostname: "sea1.ingest.uploadthing.com" },
     ],
   },
+  experimental: {
+    serverComponentsExternalPackages: ["pdfkit"],
+    outputFileTracingIncludes: {
+      "/api/admin/transactions/export": [
+        "./node_modules/pdfkit/js/data/**/*",
+        "./public/odlogo.png",
+      ],
+    },
+  },
 };
 
 export default nextConfig;

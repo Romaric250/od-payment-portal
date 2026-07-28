@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getAdminSession, authErrorResponse, requireAuth } from "@/lib/permissions";
+import {
+  AuthError,
+  getAdminSession,
+  authErrorResponse,
+  requireAuth,
+} from "@/lib/permissions";
+import { logError, serializeError } from "@/lib/logger";
 import type { PaymentStatus } from "@prisma/client";
 import { transactionsToPdf } from "@/lib/export-transactions";
 
@@ -46,6 +52,14 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    return authErrorResponse(error);
+    if (error instanceof AuthError) {
+      return authErrorResponse(error);
+    }
+
+    logError("transactions-export", { error: serializeError(error) });
+    return NextResponse.json(
+      { error: "Unable to generate the export file. Please try again shortly." },
+      { status: 500 }
+    );
   }
 }
