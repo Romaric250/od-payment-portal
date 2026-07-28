@@ -91,7 +91,8 @@ export default function SettingsPage() {
                 onChange={(e) => setNotificationEmails(e.target.value)}
               />
               <p className="text-xs text-od-text-muted">
-                Comma-separated. These addresses receive alerts on successful payments.
+                Comma-separated. Used when a category has no specific notification
+                emails set. Otherwise defaults to info@open-dreams.org.
               </p>
             </div>
             {error && <p className="text-sm text-od-error">{error}</p>}

@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { CategoryCoverImage } from "@/components/public/category-cover-image";
 import { formatCurrency } from "@/lib/format";
+import { getDisplayPrice } from "@/components/public/platform-fee-breakdown";
+import { PLATFORM_FEE_PERCENT_LABEL } from "@/lib/pricing";
 import { PublicHeader, PublicFooter } from "@/components/public/site-chrome";
 import { CheckoutForm } from "@/components/public/checkout-form";
 import { buildMetadata, LOGO_CDN_URL, siteConfig } from "@/lib/site";
@@ -55,6 +57,7 @@ export default async function PayPage({
   if (!category) notFound();
 
   const coverImage = category.images[0];
+  const displayPrice = getDisplayPrice(category.price, category.includePlatformFee);
 
   return (
     <div className="min-h-screen bg-od-bg">
@@ -80,11 +83,17 @@ export default async function PayPage({
               <p className="mt-3 text-od-text-muted">{category.description}</p>
             )}
             <p className="mt-4 text-2xl font-semibold text-od-orange">
-              {formatCurrency(category.price)}
+              {formatCurrency(displayPrice)}
               {(category.categoryType === "TSHIRT" ||
                 category.formFields.some((f) => f.affectsPrice)) &&
                 " each"}
             </p>
+            {category.includePlatformFee && (
+              <p className="mt-1 text-sm text-od-text-muted">
+                Includes {PLATFORM_FEE_PERCENT_LABEL} platform fee on top of{" "}
+                {formatCurrency(category.price)}
+              </p>
+            )}
             {category.allowCustomAmount && (
               <p className="mt-1 text-sm text-od-text-muted">
                 Custom amounts from {formatCurrency(category.minimumAmount ?? 100)} available
@@ -100,6 +109,7 @@ export default async function PayPage({
               categoryType: category.categoryType,
               allowCustomAmount: category.allowCustomAmount,
               minimumAmount: category.minimumAmount,
+              includePlatformFee: category.includePlatformFee,
               formFields: category.formFields.map((field) => ({
                 id: field.id,
                 label: field.label,

@@ -1,4 +1,5 @@
 import type { FormField, Category } from "@prisma/client";
+import { applyPlatformFee } from "@/lib/pricing";
 import { detectNetwork, normalizePhone } from "@/lib/validators";
 
 export type FormFieldInput = Pick<
@@ -10,7 +11,11 @@ export const TSHIRT_QUANTITY_KEY = "quantity";
 
 export type CategoryPricingContext = Pick<
   Category,
-  "price" | "allowCustomAmount" | "minimumAmount" | "categoryType"
+  | "price"
+  | "allowCustomAmount"
+  | "minimumAmount"
+  | "categoryType"
+  | "includePlatformFee"
 >;
 
 export interface PayerInfo {
@@ -190,10 +195,11 @@ export function calculatePaymentAmount(
     if (customAmount < minimum) {
       return { error: `Minimum amount is ${minimum} XAF` };
     }
-    if (customAmount < 100) {
+    const amount = applyPlatformFee(customAmount, category.includePlatformFee);
+    if (amount < 100) {
       return { error: "Minimum payment amount is 100 XAF" };
     }
-    return { amount: customAmount };
+    return { amount };
   }
 
   const quantityResult = resolveQuantityMultiplier(category, fields, responses);
@@ -201,7 +207,8 @@ export function calculatePaymentAmount(
     return quantityResult;
   }
 
-  const amount = category.price * quantityResult.quantity;
+  const baseAmount = category.price * quantityResult.quantity;
+  const amount = applyPlatformFee(baseAmount, category.includePlatformFee);
   if (amount < 100) {
     return { error: "Minimum payment amount is 100 XAF" };
   }

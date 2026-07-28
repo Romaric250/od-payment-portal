@@ -85,6 +85,12 @@ model Category {
   allowCustomAmount Boolean     @default(false)
   minimumAmount    Int?
   categoryType     CategoryType @default(STANDARD)
+  postPaymentTitle       String?
+  postPaymentDescription String?
+  postPaymentLink        String?
+  postPaymentLinkLabel   String?
+  notificationEmails     String[]     @default([])
+  includePlatformFee     Boolean      @default(false)
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
 

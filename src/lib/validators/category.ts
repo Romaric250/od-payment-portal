@@ -33,7 +33,40 @@ const httpUrlSchema = z
         return false;
       }
     },
-    { message: "Image URL must be a valid http(s) URL" }
+    { message: "Must be a valid http(s) URL" }
+  );
+
+const optionalTrimmedString = (max: number) =>
+  z
+    .string()
+    .max(max)
+    .optional()
+    .nullable()
+    .transform((value) => {
+      const trimmed = value?.trim();
+      return trimmed ? trimmed : null;
+    });
+
+const optionalHttpUrlSchema = z
+  .string()
+  .max(500)
+  .optional()
+  .nullable()
+  .transform((value) => {
+    const trimmed = value?.trim();
+    return trimmed ? trimmed : null;
+  })
+  .refine(
+    (value) => {
+      if (!value) return true;
+      try {
+        const url = new URL(value);
+        return url.protocol === "http:" || url.protocol === "https:";
+      } catch {
+        return false;
+      }
+    },
+    { message: "Link must be a valid http(s) URL" }
   );
 
 export const formFieldSchema = z.object({
@@ -85,6 +118,12 @@ const categoryBaseSchema = z.object({
   allowCustomAmount: z.boolean().default(false),
   minimumAmount: z.number().int().min(100).nullish(),
   categoryType: z.enum(categoryTypes).default("STANDARD"),
+  postPaymentTitle: optionalTrimmedString(120),
+  postPaymentDescription: optionalTrimmedString(2000),
+  postPaymentLink: optionalHttpUrlSchema,
+  postPaymentLinkLabel: optionalTrimmedString(80),
+  notificationEmails: z.array(z.string().email()).default([]),
+  includePlatformFee: z.boolean().default(false),
   formFields: z.array(formFieldSchema).default([]),
 });
 

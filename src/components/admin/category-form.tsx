@@ -6,6 +6,15 @@ import { useSession } from "next-auth/react";
 import { CategoryImageUpload } from "@/components/admin/category-image-upload";
 import { FormFieldEditor } from "@/components/admin/form-field-editor";
 import { slugify } from "@/lib/utils";
+import { formatCurrency } from "@/lib/format";
+import {
+  applyPlatformFee,
+  DEFAULT_NOTIFICATION_EMAIL,
+  formatEmailList,
+  getPlatformFeeAmount,
+  parseEmailList,
+  PLATFORM_FEE_PERCENT_LABEL,
+} from "@/lib/pricing";
 import type { FormFieldInput } from "@/lib/validators";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +44,12 @@ interface CategoryFormProps {
     allowCustomAmount?: boolean;
     minimumAmount?: number | null;
     categoryType?: string;
+    postPaymentTitle?: string | null;
+    postPaymentDescription?: string | null;
+    postPaymentLink?: string | null;
+    postPaymentLinkLabel?: string | null;
+    notificationEmails?: string[];
+    includePlatformFee?: boolean;
     formFields?: FormFieldInput[];
   };
 }
@@ -74,6 +89,24 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
   const [categoryType, setCategoryType] = useState(
     initialData?.categoryType ?? "STANDARD"
   );
+  const [postPaymentTitle, setPostPaymentTitle] = useState(
+    initialData?.postPaymentTitle ?? ""
+  );
+  const [postPaymentDescription, setPostPaymentDescription] = useState(
+    initialData?.postPaymentDescription ?? ""
+  );
+  const [postPaymentLink, setPostPaymentLink] = useState(
+    initialData?.postPaymentLink ?? ""
+  );
+  const [postPaymentLinkLabel, setPostPaymentLinkLabel] = useState(
+    initialData?.postPaymentLinkLabel ?? ""
+  );
+  const [notificationEmails, setNotificationEmails] = useState(
+    formatEmailList(initialData?.notificationEmails)
+  );
+  const [includePlatformFee, setIncludePlatformFee] = useState(
+    initialData?.includePlatformFee ?? false
+  );
   const [formFields, setFormFields] = useState<FormFieldInput[]>(
     initialData?.formFields ?? []
   );
@@ -86,6 +119,12 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
       setSlug(slugify(name));
     }
   }, [name, isEdit, initialData?.slug]);
+
+  const parsedPreviewPrice = parseInt(price, 10);
+  const customerUnitPrice =
+    Number.isFinite(parsedPreviewPrice) && parsedPreviewPrice >= 100
+      ? applyPlatformFee(parsedPreviewPrice, includePlatformFee)
+      : null;
 
   function addStatus() {
     const trimmed = newStatus.trim();
@@ -109,6 +148,13 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
     const trimmedDescription = description.trim();
     if (trimmedDescription.length > 2000) {
       setError("Description must be 2000 characters or less");
+      setLoading(false);
+      return;
+    }
+
+    const trimmedPostPaymentDescription = postPaymentDescription.trim();
+    if (trimmedPostPaymentDescription.length > 2000) {
+      setError("After-payment instructions must be 2000 characters or less");
       setLoading(false);
       return;
     }
@@ -157,6 +203,12 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
         ? parseInt(minimumAmount, 10) || null
         : null,
       categoryType,
+      postPaymentTitle: postPaymentTitle.trim() || null,
+      postPaymentDescription: trimmedPostPaymentDescription || null,
+      postPaymentLink: postPaymentLink.trim() || null,
+      postPaymentLinkLabel: postPaymentLinkLabel.trim() || null,
+      notificationEmails: parseEmailList(notificationEmails),
+      includePlatformFee,
       formFields: formFields.map((field, index) => ({
         ...(field.id ? { id: field.id } : {}),
         label: field.label.trim(),
@@ -296,6 +348,24 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
                 disabled={!canWrite}
                 required
               />
+              <div className="flex items-center gap-3 pt-1">
+                <Switch
+                  checked={includePlatformFee}
+                  onCheckedChange={setIncludePlatformFee}
+                  disabled={!canWrite}
+                />
+                <Label>Include platform fee ({PLATFORM_FEE_PERCENT_LABEL})</Label>
+              </div>
+              {includePlatformFee && customerUnitPrice != null && (
+                <p className="text-sm text-od-text-muted">
+                  Customer pays{" "}
+                  <span className="font-medium text-od-navy">
+                    {formatCurrency(customerUnitPrice)}
+                  </span>{" "}
+                  ({formatCurrency(parsedPreviewPrice)} +{" "}
+                  {formatCurrency(getPlatformFeeAmount(parsedPreviewPrice))} fee)
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="displayOrder">Display order</Label>
@@ -379,6 +449,90 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
               onChange={setFormFields}
               disabled={!canWrite}
             />
+          </div>
+
+          <div className="space-y-4 rounded-xl border border-od-border p-4">
+            <div>
+              <Label htmlFor="notificationEmails">Payment notification emails</Label>
+              <p className="mt-1 text-sm text-od-text-muted">
+                Admins notified when a payment succeeds for this category. Leave empty
+                to use global settings, or fall back to{" "}
+                <span className="font-medium">{DEFAULT_NOTIFICATION_EMAIL}</span>.
+              </p>
+            </div>
+            <Input
+              id="notificationEmails"
+              value={notificationEmails}
+              onChange={(e) => setNotificationEmails(e.target.value)}
+              disabled={!canWrite}
+              placeholder="events@open-dreams.org, info@open-dreams.org"
+            />
+          </div>
+
+          <div className="space-y-4 rounded-xl border border-od-border p-4">
+            <div>
+              <Label>After payment follow-up</Label>
+              <p className="mt-1 text-sm text-od-text-muted">
+                Shown on the success page and included in the payer receipt email.
+                Useful for events — WhatsApp groups, registration forms, venue details,
+                etc.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="postPaymentTitle">Section title (optional)</Label>
+              <Input
+                id="postPaymentTitle"
+                value={postPaymentTitle}
+                onChange={(e) => setPostPaymentTitle(e.target.value)}
+                disabled={!canWrite}
+                placeholder="What's next"
+                maxLength={120}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="postPaymentDescription">Instructions</Label>
+                <span className="text-xs text-od-text-muted">
+                  {postPaymentDescription.length}/2000
+                </span>
+              </div>
+              <Textarea
+                id="postPaymentDescription"
+                value={postPaymentDescription}
+                onChange={(e) => setPostPaymentDescription(e.target.value)}
+                disabled={!canWrite}
+                maxLength={2000}
+                rows={5}
+                placeholder="Thank you for registering. Join the event WhatsApp group for updates..."
+              />
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="postPaymentLink">Link URL (optional)</Label>
+                <Input
+                  id="postPaymentLink"
+                  type="url"
+                  value={postPaymentLink}
+                  onChange={(e) => setPostPaymentLink(e.target.value)}
+                  disabled={!canWrite}
+                  placeholder="https://chat.whatsapp.com/..."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="postPaymentLinkLabel">Link button label</Label>
+                <Input
+                  id="postPaymentLinkLabel"
+                  value={postPaymentLinkLabel}
+                  onChange={(e) => setPostPaymentLinkLabel(e.target.value)}
+                  disabled={!canWrite}
+                  placeholder="Join WhatsApp group"
+                  maxLength={80}
+                />
+              </div>
+            </div>
           </div>
 
           <div className="space-y-3">

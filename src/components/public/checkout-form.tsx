@@ -3,7 +3,9 @@
 import { useMemo, useState } from "react";
 import { formatCurrency } from "@/lib/format";
 import { TSHIRT_QUANTITY_KEY } from "@/lib/forms";
+import { applyPlatformFee } from "@/lib/pricing";
 import { DynamicFormFields, type PublicFormField } from "@/components/public/dynamic-form-fields";
+import { PlatformFeeBreakdown } from "@/components/public/platform-fee-breakdown";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +26,7 @@ interface CheckoutFormProps {
     categoryType?: string;
     allowCustomAmount?: boolean;
     minimumAmount?: number | null;
+    includePlatformFee?: boolean;
     formFields?: PublicFormField[];
   };
 }
@@ -57,18 +60,39 @@ export function CheckoutForm({ category }: CheckoutFormProps) {
     return 1;
   }, [formResponses, hasBuiltInQuantity, quantity, quantityField]);
 
-  const standardAmount = category.price * effectiveQuantity;
+  const includePlatformFee = category.includePlatformFee ?? false;
+  const baseStandardAmount = category.price * effectiveQuantity;
+
+  const standardAmount = useMemo(
+    () => applyPlatformFee(baseStandardAmount, includePlatformFee),
+    [baseStandardAmount, includePlatformFee]
+  );
 
   const computedAmount = useMemo(() => {
     if (category.allowCustomAmount && useCustomPayment) {
       const amount = parseInt(customAmount, 10);
-      return Number.isFinite(amount) ? amount : null;
+      if (!Number.isFinite(amount)) return null;
+      return applyPlatformFee(amount, includePlatformFee);
     }
     return standardAmount;
   }, [
     category.allowCustomAmount,
     customAmount,
+    includePlatformFee,
     standardAmount,
+    useCustomPayment,
+  ]);
+
+  const payableBaseAmount = useMemo(() => {
+    if (category.allowCustomAmount && useCustomPayment) {
+      const amount = parseInt(customAmount, 10);
+      return Number.isFinite(amount) ? amount : 0;
+    }
+    return baseStandardAmount;
+  }, [
+    baseStandardAmount,
+    category.allowCustomAmount,
+    customAmount,
     useCustomPayment,
   ]);
 
@@ -299,6 +323,8 @@ export function CheckoutForm({ category }: CheckoutFormProps) {
                   <p className="text-xs text-od-text-muted">
                     Minimum custom amount:{" "}
                     {formatCurrency(category.minimumAmount ?? 100)}
+                    {includePlatformFee &&
+                      " (+ 3% platform fee added at checkout)"}
                   </p>
                 </div>
               )}
@@ -356,6 +382,11 @@ export function CheckoutForm({ category }: CheckoutFormProps) {
           {error && (
             <p className="rounded-lg bg-red-50 p-3 text-sm text-od-error">{error}</p>
           )}
+
+          <PlatformFeeBreakdown
+            baseAmount={payableBaseAmount}
+            includePlatformFee={includePlatformFee}
+          />
 
           <Button type="submit" className="w-full" disabled={loading}>
             {loading

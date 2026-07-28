@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 import { syncPaymentFromFapshi } from "@/lib/payments";
+import { paymentFollowUpCategorySelect } from "@/lib/post-payment";
 
 export async function GET(
   _request: Request,
@@ -13,7 +14,7 @@ export async function GET(
       where: { id: params.id },
       include: {
         category: {
-          select: { name: true, slug: true },
+          select: paymentFollowUpCategorySelect,
         },
       },
     });

@@ -1,7 +1,63 @@
+import {
+  getPostPaymentLinkLabel,
+  getPostPaymentTitle,
+  hasPostPaymentFollowUp,
+  type PostPaymentFollowUp,
+} from "@/lib/post-payment";
+
 interface EmailLayoutProps {
   title: string;
   preview?: string;
   children: string;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+export function postPaymentFollowUpEmailBlock(
+  followUp: Partial<PostPaymentFollowUp>
+): string {
+  if (!hasPostPaymentFollowUp(followUp)) {
+    return "";
+  }
+
+  const title = escapeHtml(
+    getPostPaymentTitle(followUp.postPaymentTitle, followUp.categoryType)
+  );
+  const description = followUp.postPaymentDescription?.trim();
+  const link = followUp.postPaymentLink?.trim();
+  const linkLabel = escapeHtml(getPostPaymentLinkLabel(followUp.postPaymentLinkLabel));
+
+  const descriptionHtml = description
+    ? description
+        .split(/\n{2,}/)
+        .map((paragraph) => paragraph.trim())
+        .filter(Boolean)
+        .map(
+          (paragraph) =>
+            `<p style="margin:0 0 12px;color:#344054;line-height:1.6;">${escapeHtml(paragraph)}</p>`
+        )
+        .join("")
+    : "";
+
+  const linkHtml = link
+    ? `<a href="${escapeHtml(link)}" style="display:inline-block;background:#F5811F;color:#FFFFFF;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;margin-top:8px;">
+        ${linkLabel}
+      </a>`
+    : "";
+
+  return `
+    <div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:12px;padding:20px;margin:24px 0 0;">
+      <h3 style="margin:0 0 12px;font-size:16px;color:#0B2545;">${title}</h3>
+      ${descriptionHtml}
+      ${linkHtml}
+    </div>
+  `;
 }
 
 export function emailLayout({ title, preview, children }: EmailLayoutProps): string {
@@ -83,11 +139,17 @@ export function payerReceiptEmail(params: {
   categoryName: string;
   transactionId: string;
   orgName: string;
+  followUp?: Partial<PostPaymentFollowUp>;
 }): string {
   const amountFormatted = new Intl.NumberFormat("fr-CM").format(params.amount);
+  const followUpBlock = postPaymentFollowUpEmailBlock(params.followUp ?? {});
+  const preview = followUpBlock
+    ? `Your payment was received. Here are your next steps for ${params.categoryName}.`
+    : `Thank you for your payment of ${amountFormatted} FCFA`;
+
   return emailLayout({
     title: "Payment Receipt",
-    preview: `Thank you for your payment of ${amountFormatted} FCFA`,
+    preview,
     children: `
       <h2 style="margin:0 0 16px;font-size:18px;color:#0B2545;">Thank You, ${params.payerName}</h2>
       <p style="margin:0 0 24px;color:#667085;line-height:1.6;">
@@ -101,6 +163,7 @@ export function payerReceiptEmail(params: {
         <tr><td style="padding:8px 0;color:#667085;">Category</td><td style="padding:8px 0;text-align:right;font-weight:600;">${params.categoryName}</td></tr>
         <tr><td style="padding:8px 0;color:#667085;">Transaction ID</td><td style="padding:8px 0;text-align:right;font-weight:600;">${params.transactionId}</td></tr>
       </table>
+      ${followUpBlock}
       <p style="margin:24px 0 0;color:#667085;line-height:1.6;">
         Thank you for supporting Open Dreams.
       </p>

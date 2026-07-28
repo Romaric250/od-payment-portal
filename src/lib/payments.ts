@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { fapshiService } from "@/lib/fapshi";
 import { sendPaymentSuccessEmails } from "@/lib/emails/payment-success";
+import { paymentFollowUpCategorySelect } from "@/lib/post-payment";
 import type { PaymentStatus } from "@prisma/client";
 
 export async function finalizePaymentStatus(params: {
@@ -56,7 +57,7 @@ export async function syncPaymentFromFapshi(paymentId: string) {
     return prisma.payment.findUnique({
       where: { id: paymentId },
       include: {
-        category: { select: { name: true, slug: true } },
+        category: { select: paymentFollowUpCategorySelect },
       },
     });
   }
@@ -76,7 +77,7 @@ export async function syncPaymentFromFapshi(paymentId: string) {
   return prisma.payment.findUnique({
     where: { id: paymentId },
     include: {
-      category: { select: { name: true, slug: true } },
+      category: { select: paymentFollowUpCategorySelect },
     },
   });
 }

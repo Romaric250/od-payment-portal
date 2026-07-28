@@ -8,6 +8,8 @@ import { PublicHeader, PublicFooter } from "@/components/public/site-chrome";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency, formatDate } from "@/lib/format";
+import { PostPaymentFollowUpCard } from "@/components/public/post-payment-follow-up";
+import { hasPostPaymentFollowUp } from "@/lib/post-payment";
 
 interface PaymentDetails {
   id: string;
@@ -19,7 +21,15 @@ interface PaymentDetails {
   payerName: string;
   confirmedAt: string | null;
   updatedAt: string;
-  category: { name: string; slug: string };
+  category: {
+    name: string;
+    slug: string;
+    categoryType?: string;
+    postPaymentTitle: string | null;
+    postPaymentDescription: string | null;
+    postPaymentLink: string | null;
+    postPaymentLinkLabel: string | null;
+  };
 }
 
 export default function SuccessContent({ slug }: { slug: string }) {
@@ -151,10 +161,22 @@ export default function SuccessContent({ slug }: { slug: string }) {
             </div>
 
             <p className="rounded-lg border border-od-border bg-white p-4 text-center text-od-text-muted">
-              A receipt has been sent to{" "}
-              <span className="font-medium text-od-text">{payment.payerEmail}</span>.
-              Please check your inbox (and spam folder).
+              {hasPostPaymentFollowUp(payment.category) ? (
+                <>
+                  A receipt with next steps has been sent to{" "}
+                  <span className="font-medium text-od-text">{payment.payerEmail}</span>.
+                  Please check your inbox (and spam folder).
+                </>
+              ) : (
+                <>
+                  A receipt has been sent to{" "}
+                  <span className="font-medium text-od-text">{payment.payerEmail}</span>.
+                  Please check your inbox (and spam folder).
+                </>
+              )}
             </p>
+
+            <PostPaymentFollowUpCard followUp={payment.category} />
 
             <Button asChild className="w-full">
               <Link href="/">Back to categories</Link>

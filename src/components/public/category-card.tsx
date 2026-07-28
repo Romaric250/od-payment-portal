@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { formatCurrency } from "@/lib/format";
+import { getDisplayPrice } from "@/components/public/platform-fee-breakdown";
 import { CategoryCoverImage } from "@/components/public/category-cover-image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +14,7 @@ interface CategoryCardProps {
     price: number;
     images: string[];
     categoryType?: string;
+    includePlatformFee?: boolean;
     allowCustomAmount?: boolean;
     minimumAmount?: number | null;
   };
@@ -20,6 +22,10 @@ interface CategoryCardProps {
 
 export function CategoryCard({ category }: CategoryCardProps) {
   const coverImage = category.images[0];
+  const displayPrice = getDisplayPrice(
+    category.price,
+    category.includePlatformFee ?? false
+  );
 
   return (
     <Card className="overflow-hidden transition-shadow hover:shadow-md">
@@ -40,7 +46,7 @@ export function CategoryCard({ category }: CategoryCardProps) {
       </CardHeader>
       <CardContent className="flex items-center justify-between gap-4">
         <p className="text-lg font-semibold text-od-navy">
-          {formatCurrency(category.price)}
+          {formatCurrency(displayPrice)}
           {category.categoryType === "TSHIRT" && (
             <span className="text-sm font-normal text-od-text-muted"> each</span>
           )}
