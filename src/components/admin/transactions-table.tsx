@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -32,6 +34,7 @@ interface TransactionsTableProps {
   transactions: Transaction[];
   canWrite: boolean;
   onStatusChange?: (paymentId: string, status: string) => Promise<void>;
+  onConfirmPayment?: (paymentId: string) => Promise<void>;
   showCategory?: boolean;
   showFormResponses?: boolean;
 }
@@ -51,19 +54,44 @@ function statusVariant(status: string) {
   }
 }
 
+function canManuallyConfirm(status: string): boolean {
+  return status === "PENDING" || status === "INITIATED";
+}
+
 export function TransactionsTable({
   transactions,
   canWrite,
   onStatusChange,
+  onConfirmPayment,
   showCategory = true,
   showFormResponses = false,
 }: TransactionsTableProps) {
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+
   if (transactions.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-od-border bg-white p-8 text-center text-od-text-muted">
         No transactions found.
       </div>
     );
+  }
+
+  async function handleConfirm(paymentId: string, payerName: string) {
+    if (
+      !onConfirmPayment ||
+      !window.confirm(
+        `Mark ${payerName}'s payment as successful? Confirmation emails will be sent.`
+      )
+    ) {
+      return;
+    }
+
+    setConfirmingId(paymentId);
+    try {
+      await onConfirmPayment(paymentId);
+    } finally {
+      setConfirmingId(null);
+    }
   }
 
   return (
@@ -78,6 +106,9 @@ export function TransactionsTable({
             <th className="px-4 py-3 font-medium">Payment</th>
             <th className="px-4 py-3 font-medium">Fulfillment</th>
             <th className="px-4 py-3 font-medium">Date</th>
+            {canWrite && onConfirmPayment && (
+              <th className="px-4 py-3 font-medium">Actions</th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -86,8 +117,9 @@ export function TransactionsTable({
               <td className="px-4 py-3">
                 <p className="font-medium text-od-text">{tx.payerName}</p>
                 <p className="text-xs text-od-text-muted">{tx.payerPhone}</p>
+                <p className="text-xs text-od-text-muted">{tx.payerEmail}</p>
                 {showFormResponses && tx.formResponses && tx.formResponses.length > 0 && (
-                  <div className="mt-1 space-y-0.5">
+                  <div className="mt-2 space-y-0.5">
                     {tx.formResponses.map((response) => (
                       <p key={response.fieldKey} className="text-xs text-od-text-muted">
                         {response.fieldKey}: {response.value}
@@ -125,9 +157,26 @@ export function TransactionsTable({
                   <span>{tx.fulfillmentStatus ?? "—"}</span>
                 )}
               </td>
-              <td className="px-4 py-3 text-od-text-muted">
+              <td className="px-4 py-3 whitespace-nowrap text-od-text-muted">
                 {formatDate(tx.createdAt)}
               </td>
+              {canWrite && onConfirmPayment && (
+                <td className="px-4 py-3">
+                  {canManuallyConfirm(tx.status) ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={confirmingId === tx.id}
+                      onClick={() => handleConfirm(tx.id, tx.payerName)}
+                    >
+                      {confirmingId === tx.id ? "Confirming..." : "Mark successful"}
+                    </Button>
+                  ) : (
+                    <span className="text-xs text-od-text-muted">—</span>
+                  )}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

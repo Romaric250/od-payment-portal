@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Loader2, CheckCircle2 } from "lucide-react";
+import { Loader2, CheckCircle2, Mail } from "lucide-react";
 import { PublicHeader, PublicFooter } from "@/components/public/site-chrome";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,6 +32,56 @@ interface PaymentDetails {
   };
 }
 
+function ReceiptDetails({ payment }: { payment: PaymentDetails }) {
+  const transactionId = payment.fapshiTransId ?? payment.externalId;
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl border border-green-100 bg-green-50 px-4 py-5 sm:px-5">
+        <p className="text-sm text-od-text-muted">Amount paid</p>
+        <p className="mt-1 text-3xl font-bold tracking-tight text-od-orange sm:text-4xl">
+          {formatCurrency(payment.amount)}
+        </p>
+      </div>
+
+      <dl className="space-y-3 rounded-xl bg-od-bg p-4 sm:p-5">
+        <div className="grid gap-1 sm:grid-cols-[7rem_1fr] sm:gap-4">
+          <dt className="text-sm text-od-text-muted">Category</dt>
+          <dd className="text-sm font-medium text-od-navy">{payment.category.name}</dd>
+        </div>
+        <div className="grid gap-1 sm:grid-cols-[7rem_1fr] sm:gap-4">
+          <dt className="text-sm text-od-text-muted">Transaction</dt>
+          <dd className="break-all text-sm font-medium text-od-navy">{transactionId}</dd>
+        </div>
+        <div className="grid gap-1 sm:grid-cols-[7rem_1fr] sm:gap-4">
+          <dt className="text-sm text-od-text-muted">Date</dt>
+          <dd className="text-sm font-medium text-od-navy">
+            {formatDate(payment.confirmedAt ?? payment.updatedAt)}
+          </dd>
+        </div>
+      </dl>
+
+      <div className="flex gap-3 rounded-xl border border-od-border bg-white p-4 text-sm text-od-text-muted">
+        <Mail className="mt-0.5 h-4 w-4 shrink-0 text-od-orange" aria-hidden />
+        <p>
+          {hasPostPaymentFollowUp(payment.category) ? (
+            <>
+              A receipt with next steps was sent to{" "}
+              <span className="break-all font-medium text-od-text">{payment.payerEmail}</span>.
+            </>
+          ) : (
+            <>
+              A receipt was sent to{" "}
+              <span className="break-all font-medium text-od-text">{payment.payerEmail}</span>.
+            </>
+          )}{" "}
+          Check your inbox and spam folder.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function SuccessContent({ slug }: { slug: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -48,7 +98,7 @@ export default function SuccessContent({ slug }: { slug: string }) {
 
     let active = true;
     let attempts = 0;
-    const maxAttempts = 40; // ~2 minutes at 3s intervals
+    const maxAttempts = 40;
 
     async function poll() {
       try {
@@ -98,9 +148,9 @@ export default function SuccessContent({ slug }: { slug: string }) {
 
   if (confirming || !payment) {
     return (
-      <div className="min-h-screen bg-od-bg">
+      <div className="flex min-h-screen flex-col bg-od-bg">
         <PublicHeader />
-        <main className="mx-auto flex max-w-lg px-4 py-16 sm:px-6">
+        <main className="mx-auto flex w-full max-w-lg flex-1 items-center px-4 py-8 sm:px-6">
           <Card className="w-full">
             <CardHeader className="text-center">
               <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-od-bg">
@@ -108,9 +158,9 @@ export default function SuccessContent({ slug }: { slug: string }) {
               </div>
               <CardTitle>Confirming Payment</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-center text-od-text-muted">
+            <CardContent className="space-y-2 text-center text-sm text-od-text-muted">
               <p>Please wait while we confirm your payment...</p>
-              <p className="text-sm">Do not close this page.</p>
+              <p>Do not close this page.</p>
             </CardContent>
           </Card>
         </main>
@@ -119,70 +169,62 @@ export default function SuccessContent({ slug }: { slug: string }) {
     );
   }
 
+  const showFollowUp = hasPostPaymentFollowUp(payment.category);
+
   return (
-    <div className="min-h-screen bg-od-bg">
+    <div className="flex min-h-screen flex-col bg-od-bg">
       <PublicHeader />
-      <main className="mx-auto max-w-lg px-4 py-16 sm:px-6">
-        <Card>
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-50">
-              <CheckCircle2 className="h-9 w-9 text-od-success" />
-            </div>
-            <CardTitle className="text-2xl text-od-navy">Payment Successful</CardTitle>
-            <p className="mt-2 text-sm text-od-text-muted">
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6 sm:py-10 lg:py-12">
+        <div className="mb-6 flex items-start gap-4 sm:mb-8">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-50 sm:h-14 sm:w-14">
+            <CheckCircle2 className="h-7 w-7 text-od-success sm:h-8 sm:w-8" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl font-bold text-od-navy sm:text-3xl">
+              Payment successful
+            </h1>
+            <p className="mt-1 text-sm text-od-text-muted sm:text-base">
               Thank you, {payment.payerName}. Your payment has been received.
             </p>
-          </CardHeader>
-          <CardContent className="space-y-5 text-sm">
-            <div className="rounded-lg border border-green-100 bg-green-50 p-4 text-center">
-              <p className="text-od-text-muted">Amount paid</p>
-              <p className="text-3xl font-bold text-od-orange">
-                {formatCurrency(payment.amount)}
-              </p>
-            </div>
+          </div>
+        </div>
 
-            <div className="space-y-2 rounded-lg bg-od-bg p-4">
-              <div className="flex justify-between gap-4">
-                <span className="text-od-text-muted">Category</span>
-                <span className="text-right font-medium">{payment.category.name}</span>
-              </div>
-              <div className="flex justify-between gap-4">
-                <span className="text-od-text-muted">Transaction ID</span>
-                <span className="text-right font-medium">
-                  {payment.fapshiTransId ?? payment.externalId}
-                </span>
-              </div>
-              <div className="flex justify-between gap-4">
-                <span className="text-od-text-muted">Date</span>
-                <span className="text-right font-medium">
-                  {formatDate(payment.confirmedAt ?? payment.updatedAt)}
-                </span>
-              </div>
-            </div>
+        <div
+          className={
+            showFollowUp
+              ? "grid gap-6 lg:grid-cols-2 lg:items-start lg:gap-8"
+              : "mx-auto max-w-xl"
+          }
+        >
+          <Card className="h-fit">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg text-od-navy">Payment receipt</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ReceiptDetails payment={payment} />
+            </CardContent>
+          </Card>
 
-            <p className="rounded-lg border border-od-border bg-white p-4 text-center text-od-text-muted">
-              {hasPostPaymentFollowUp(payment.category) ? (
-                <>
-                  A receipt with next steps has been sent to{" "}
-                  <span className="font-medium text-od-text">{payment.payerEmail}</span>.
-                  Please check your inbox (and spam folder).
-                </>
-              ) : (
-                <>
-                  A receipt has been sent to{" "}
-                  <span className="font-medium text-od-text">{payment.payerEmail}</span>.
-                  Please check your inbox (and spam folder).
-                </>
-              )}
-            </p>
+          {showFollowUp && (
+            <Card className="h-fit border-od-orange/20 bg-orange-50/30">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg text-od-navy">Your next steps</CardTitle>
+                <p className="text-sm text-od-text-muted">
+                  Same details are in your email — you can also use the link below.
+                </p>
+              </CardHeader>
+              <CardContent>
+                <PostPaymentFollowUpCard followUp={payment.category} compact />
+              </CardContent>
+            </Card>
+          )}
+        </div>
 
-            <PostPaymentFollowUpCard followUp={payment.category} />
-
-            <Button asChild className="w-full">
-              <Link href="/">Back to categories</Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="mt-6 sm:mt-8">
+          <Button asChild className="w-full sm:w-auto">
+            <Link href="/">Back to categories</Link>
+          </Button>
+        </div>
       </main>
       <PublicFooter />
     </div>

@@ -52,6 +52,9 @@ interface CategoryFormProps {
     includePlatformFee?: boolean;
     formFields?: FormFieldInput[];
   };
+  layout?: "card" | "plain";
+  onSaved?: (category: { id: string; name: string; slug: string }) => void;
+  onCancel?: () => void;
 }
 
 const CATEGORY_TYPES = [
@@ -62,7 +65,12 @@ const CATEGORY_TYPES = [
   { value: "SCHOLARSHIP", label: "Scholarship" },
 ];
 
-export function CategoryForm({ initialData }: CategoryFormProps) {
+export function CategoryForm({
+  initialData,
+  layout = "card",
+  onSaved,
+  onCancel,
+}: CategoryFormProps) {
   const router = useRouter();
   const { data: session } = useSession();
   const canWrite = session?.user?.accessLevel === "READ_WRITE";
@@ -244,8 +252,12 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
         throw new Error(detail || result.error || "Save failed");
       }
 
-      router.push(`/admin/categories/${result.id}`);
-      router.refresh();
+      if (onSaved) {
+        onSaved(result);
+      } else {
+        router.push(`/admin/categories/${result.id}`);
+        router.refresh();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed");
     } finally {
@@ -253,12 +265,8 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
     }
   }
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{isEdit ? "Edit Category" : "New Category"}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
+  const formBody = (
+    <>
         <div className="space-y-3">
           <Label>Images</Label>
           {images.length > 0 ? (
@@ -572,12 +580,31 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
           {error && <p className="text-sm text-od-error">{error}</p>}
 
           {canWrite && (
-            <Button type="submit" disabled={loading}>
-              {loading ? "Saving..." : isEdit ? "Save Changes" : "Create Category"}
-            </Button>
+            <div className="flex flex-wrap gap-3">
+              <Button type="submit" disabled={loading}>
+                {loading ? "Saving..." : isEdit ? "Save changes" : "Create category"}
+              </Button>
+              {onCancel && (
+                <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
+                  Cancel
+                </Button>
+              )}
+            </div>
           )}
         </form>
-      </CardContent>
+    </>
+  );
+
+  if (layout === "plain") {
+    return <div className="space-y-6">{formBody}</div>;
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{isEdit ? "Edit Category" : "New Category"}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">{formBody}</CardContent>
     </Card>
   );
 }

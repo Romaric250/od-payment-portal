@@ -64,6 +64,20 @@ export default function TransactionsPage() {
     }
   }
 
+  async function handleConfirmPayment(paymentId: string) {
+    const res = await fetch(`/api/admin/transactions/${paymentId}/confirm`, {
+      method: "POST",
+    });
+
+    if (!res.ok) {
+      const result = await res.json();
+      window.alert(result.error ?? "Could not confirm payment");
+      return;
+    }
+
+    await loadTransactions();
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -98,6 +112,7 @@ export default function TransactionsPage() {
         transactions={transactions}
         canWrite={canWrite}
         onStatusChange={handleStatusChange}
+        onConfirmPayment={canWrite ? handleConfirmPayment : undefined}
       />
     </div>
   );

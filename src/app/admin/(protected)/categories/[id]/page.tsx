@@ -2,13 +2,17 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { Download, Pencil } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { CategoryForm } from "@/components/admin/category-form";
+import {
+  CategoryEditDialog,
+  type CategoryEditData,
+} from "@/components/admin/category-edit-dialog";
 import { StatCard, StatCardCurrency } from "@/components/admin/stat-card";
 import { AdminPageLoading } from "@/components/admin/admin-loading";
 import { TransactionsTable } from "@/components/admin/transactions-table";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { FormFieldInput } from "@/lib/validators";
 
 interface CategoryDetailPageProps {
   params: { id: string };
@@ -18,21 +22,9 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
   const { data: session } = useSession();
   const canWrite = session?.user?.accessLevel === "READ_WRITE";
 
-  const [category, setCategory] = useState<{
-    id: string;
-    name: string;
-    slug: string;
-    description: string | null;
-    price: number;
-    images: string[];
-    isActive: boolean;
-    displayOrder: number;
-    statusPipeline: string[];
-    allowCustomAmount: boolean;
-    minimumAmount: number | null;
-    categoryType: string;
-    formFields: FormFieldInput[];
-  } | null>(null);
+  const [category, setCategory] = useState<CategoryEditData | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const [stats, setStats] = useState<{
     totalCollected: number;
@@ -80,7 +72,7 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
     const [categoryRes, statsRes, txRes] = await Promise.all([
       fetch(`/api/admin/categories/${params.id}`),
       fetch(`/api/admin/categories/${params.id}/stats`),
-      fetch(`/api/admin/transactions?categoryId=${params.id}&limit=50`),
+      fetch(`/api/admin/transactions?categoryId=${params.id}&limit=100`),
     ]);
 
     setCategory(await categoryRes.json());
@@ -105,6 +97,43 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
     }
   }
 
+  async function handleConfirmPayment(paymentId: string) {
+    const res = await fetch(`/api/admin/transactions/${paymentId}/confirm`, {
+      method: "POST",
+    });
+
+    if (!res.ok) {
+      const result = await res.json();
+      window.alert(result.error ?? "Could not confirm payment");
+      return;
+    }
+
+    await loadData();
+  }
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      const res = await fetch(
+        `/api/admin/transactions/export?categoryId=${params.id}&status=SUCCESSFUL`
+      );
+      if (!res.ok) {
+        throw new Error("Export failed");
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${category?.slug ?? "category"}-successful-payments.pdf`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      window.alert("Could not export transactions. Please try again.");
+    } finally {
+      setExporting(false);
+    }
+  }
+
   const filteredTransactions = transactions.filter((tx) => {
     if (!search) return true;
     const q = search.toLowerCase();
@@ -121,16 +150,33 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-od-navy">{category.name}</h1>
           <p className="text-sm text-od-text-muted">
-            {category.categoryType} · Category workspace
+            {category.categoryType} · {category.isActive ? "Active" : "Inactive"}
           </p>
         </div>
-        <Link href="/admin/expenses" className="text-sm text-od-orange">
-          View expenses
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleExport}
+            disabled={exporting}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            {exporting ? "Exporting..." : "Export PDF"}
+          </Button>
+          {canWrite && (
+            <Button type="button" onClick={() => setEditOpen(true)}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit category
+            </Button>
+          )}
+          <Button type="button" variant="outline" asChild>
+            <Link href="/admin/expenses">View expenses</Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -144,13 +190,16 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
         <StatCardCurrency title="Net Balance" amount={stats.netBalance} />
       </div>
 
-      <CategoryForm initialData={category} />
-
       <div className="space-y-4">
-        <div className="flex items-center justify-between gap-4">
-          <h2 className="text-lg font-semibold text-od-navy">Payments</h2>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-od-navy">Transactions</h2>
+            <p className="text-sm text-od-text-muted">
+              Review payments and confirm pending transactions when needed.
+            </p>
+          </div>
           <Input
-            placeholder="Search by name or phone..."
+            placeholder="Search by name, phone, or email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="max-w-xs"
@@ -160,10 +209,18 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
           transactions={filteredTransactions}
           canWrite={canWrite}
           onStatusChange={handleStatusChange}
+          onConfirmPayment={canWrite ? handleConfirmPayment : undefined}
           showCategory={false}
           showFormResponses
         />
       </div>
+
+      <CategoryEditDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        category={category}
+        onUpdated={loadData}
+      />
     </div>
   );
 }
