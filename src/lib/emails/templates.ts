@@ -4,6 +4,7 @@ import {
   hasPostPaymentFollowUp,
   type PostPaymentFollowUp,
 } from "@/lib/post-payment";
+import { formatAmount } from "@/lib/format";
 
 interface EmailLayoutProps {
   title: string;
@@ -110,7 +111,7 @@ export function adminPaymentNotificationEmail(params: {
   timestamp: string;
   adminUrl: string;
 }): string {
-  const amountFormatted = new Intl.NumberFormat("fr-CM").format(params.amount);
+  const amountFormatted = formatAmount(params.amount);
   return emailLayout({
     title: "Payment Successful",
     preview: `${params.payerName} paid ${amountFormatted} FCFA`,
@@ -141,7 +142,7 @@ export function payerReceiptEmail(params: {
   orgName: string;
   followUp?: Partial<PostPaymentFollowUp>;
 }): string {
-  const amountFormatted = new Intl.NumberFormat("fr-CM").format(params.amount);
+  const amountFormatted = formatAmount(params.amount);
   const followUpBlock = postPaymentFollowUpEmailBlock(params.followUp ?? {});
   const preview = followUpBlock
     ? `Your payment was received. Here are your next steps for ${params.categoryName}.`
