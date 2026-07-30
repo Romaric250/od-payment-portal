@@ -257,6 +257,10 @@ export const expenseUpdateSchema = expenseSchema.partial().extend({
   handledAt: z.string().datetime().optional().nullable(),
 });
 
+export const expenseBulkHandleSchema = z.object({
+  ids: z.array(z.string().min(1)).min(1, "Select at least one expense"),
+});
+
 export type FormFieldInput = z.infer<typeof formFieldSchema>;
 export type CategoryInput = z.infer<typeof categorySchema>;
 export type CategoryUpdateInput = z.infer<typeof categoryUpdateSchema>;

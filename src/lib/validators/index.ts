@@ -76,6 +76,7 @@ export {
   formFieldSchema,
   expenseSchema,
   expenseUpdateSchema,
+  expenseBulkHandleSchema,
   categoryTypes,
   formFieldTypes,
   expenseStatuses,

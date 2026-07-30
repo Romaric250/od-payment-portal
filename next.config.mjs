@@ -15,6 +15,10 @@ const nextConfig = {
         "./node_modules/pdfkit/js/data/**/*",
         "./public/odlogo.png",
       ],
+      "/api/admin/expenses/export": [
+        "./node_modules/pdfkit/js/data/**/*",
+        "./public/odlogo.png",
+      ],
     },
   },
 };
