@@ -1,0 +1,105 @@
+{
+  "mode": "execute",
+  "moonUntouched": 16,
+  "removed": [
+    {
+      "id": "6a6393a53677a5bd7334485e",
+      "status": "SUCCESSFUL",
+      "payerName": "Guachuessi François Junior",
+      "payerEmail": "guachuessijunior@gmail.com",
+      "payerPhone": "673643649",
+      "amount": 15000,
+      "fapshiTransId": "RwyMmid0"
+    },
+    {
+      "id": "6a63ae642bc99b740f37f519",
+      "status": "SUCCESSFUL",
+      "payerName": "BALAK BINTA CHAK",
+      "payerEmail": "francisbalaktangu@gmail.com",
+      "payerPhone": "675834583",
+      "amount": 15000,
+      "fapshiTransId": "MEn1kbCb"
+    },
+    {
+      "id": "6a65a1a81f35e4fe8f4b947d",
+      "status": "SUCCESSFUL",
+      "payerName": "Dingana Romeo Bengyella",
+      "payerEmail": "melvismelvis655@gmail.com",
+      "payerPhone": "674975439",
+      "amount": 15000,
+      "fapshiTransId": "jhVxHV2z"
+    },
+    {
+      "id": "6a66626f01cb8911b7128036",
+      "status": "SUCCESSFUL",
+      "payerName": "TAYIMETHA OYONO JULES MATHIEU",
+      "payerEmail": "oyonojules7@gmail.com",
+      "payerPhone": "679507286",
+      "amount": 15000,
+      "fapshiTransId": "u91nM1kC"
+    },
+    {
+      "id": "6a67afaca3798aee927f1ba1",
+      "status": "SUCCESSFUL",
+      "payerName": "Kpue Theresia Favour Bei",
+      "payerEmail": "kpuefavour@gmail.com",
+      "payerPhone": "677472152",
+      "amount": 15000,
+      "fapshiTransId": "j3HZYDEe"
+    },
+    {
+      "id": "6a6e3cf67f062285d62ae4ad",
+      "status": "SUCCESSFUL",
+      "payerName": "Tikum Visvette Tikum",
+      "payerEmail": "tikumvisvette@gmail.com",
+      "payerPhone": "654970113",
+      "amount": 15000,
+      "fapshiTransId": "8ntZbMb4"
+    },
+    {
+      "id": "6a6ed1a593da00a859e3a176",
+      "status": "SUCCESSFUL",
+      "payerName": "Njatou Njoya lawrence junior",
+      "payerEmail": "njoyajunior17@gmail.com",
+      "payerPhone": "640851558",
+      "amount": 15000,
+      "fapshiTransId": "Ebsq3A9E"
+    },
+    {
+      "id": "6a6f54aa8634e2f56ce8c172",
+      "status": "SUCCESSFUL",
+      "payerName": "Monji Randy Junior",
+      "payerEmail": "monjirandy4@gmail.com",
+      "payerPhone": "673881054",
+      "amount": 15000,
+      "fapshiTransId": "cxcWlcfi"
+    },
+    {
+      "id": "6a6f890912af3ee0fd7dcfb2",
+      "status": "SUCCESSFUL",
+      "payerName": "TCHINDA MEKONTSO ERNEST GAËL",
+      "payerEmail": "ernesttchindagael@gmail.com",
+      "payerPhone": "650858154",
+      "amount": 15000,
+      "fapshiTransId": "Lu0SxbXt"
+    },
+    {
+      "id": "6a70c67736730edb2440a2a0",
+      "status": "SUCCESSFUL",
+      "payerName": "Tata Dorcas Jingkoh",
+      "payerEmail": "jingkohdorcas101@gmail.com",
+      "payerPhone": "682683590",
+      "amount": 15000,
+      "fapshiTransId": "NdKqTvYW"
+    },
+    {
+      "id": "6a712cd025ca351d90669cbd",
+      "status": "SUCCESSFUL",
+      "payerName": "Jemimah Neh Foba",
+      "payerEmail": "jemimahneh18@gmail.com",
+      "payerPhone": "672143570",
+      "amount": 15000,
+      "fapshiTransId": "j6q10b4j"
+    }
+  ]
+}

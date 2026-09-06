@@ -1,0 +1,141 @@
+{
+  "csvSuccessful15000": 36,
+  "alreadySuccessful": 36,
+  "confirmedPending": 0,
+  "emailsSent": 0,
+  "created": 0,
+  "skipped": 0,
+  "errors": [],
+  "missingContacts": [
+    {
+      "transactionId": "526VN0KL",
+      "reference": "99cd4ede-7295-46ce-9a32-0a1d668748a5",
+      "name": "Essiane",
+      "email": "essianeokoo@gmail.com",
+      "phone": "659253774",
+      "amount": 15000,
+      "date": "2026-07-29T11:33:37.081Z",
+      "reason": "Still EXPIRED on Fapshi — follow up manually"
+    },
+    {
+      "transactionId": "R8LYzshB",
+      "reference": "36fb3002-c1b6-4418-a320-69763f887b85",
+      "name": "Romaric Lonfonyuy",
+      "email": "lonfonyuyromaric@gmail.com",
+      "phone": "650650516",
+      "amount": 15000,
+      "date": "2026-08-04T07:13:12.663Z",
+      "reason": "Still EXPIRED on Fapshi — follow up manually"
+    },
+    {
+      "transactionId": "G7cmsjQR",
+      "reference": "43e2b332-4885-44fe-96ba-1203a86ae6e3",
+      "name": "Bukhari Abdou",
+      "email": "bukhariabdou7@gmail.com",
+      "phone": "699977394",
+      "amount": 15000,
+      "date": "2026-08-06T12:45:02.894Z",
+      "reason": "Still EXPIRED on Fapshi — follow up manually"
+    },
+    {
+      "transactionId": "Hw31m4Yb",
+      "reference": "75073065-1fc6-47a2-8f66-12ab64b45c3c",
+      "name": "MEFONDJO FOKA LUDIVINE EDRASSE",
+      "email": "mefondjoludivine@gmail.com",
+      "phone": "678022556",
+      "amount": 15000,
+      "date": "2026-08-07T13:29:42.540Z",
+      "reason": "Still EXPIRED on Fapshi — follow up manually"
+    },
+    {
+      "transactionId": "J2VD2fYa",
+      "reference": "252f7875-acd5-4332-9546-27211894fe04",
+      "name": "Emmanuel Neba Shu",
+      "email": "emmanuelshu8020@gmail.com",
+      "phone": "671674516",
+      "amount": 15000,
+      "date": "2026-08-07T19:10:18.013Z",
+      "reason": "Still EXPIRED on Fapshi — follow up manually"
+    },
+    {
+      "transactionId": "TY4Yuzwh",
+      "reference": "9d89ce7e-2916-47a8-93fe-e9bbe110a112",
+      "name": "Emmanuel Neba Shu",
+      "email": "emmanuelshu8020@gmail.com",
+      "phone": "671674516",
+      "amount": 15000,
+      "date": "2026-08-07T19:10:41.852Z",
+      "reason": "Still EXPIRED on Fapshi — follow up manually"
+    },
+    {
+      "transactionId": "LfbzVyZK",
+      "reference": "acb3606d-2f84-4851-8e84-67ab9a360e31",
+      "name": "Emmanuel Neba Shu",
+      "email": "emmanuelshu8020@gmail.com",
+      "phone": "671674516",
+      "amount": 15000,
+      "date": "2026-08-07T19:11:50.234Z",
+      "reason": "Still EXPIRED on Fapshi — follow up manually"
+    },
+    {
+      "transactionId": "FZLvVXHF",
+      "reference": "fdc1878b-7385-43a1-980e-ca06c1bd19de",
+      "name": "MEFONDJO FOKA LUDIVINE EDRASSE",
+      "email": "mefondjoludivine@gmail.com",
+      "phone": "654910329",
+      "amount": 15000,
+      "date": "2026-08-07T23:08:13.554Z",
+      "reason": "Still EXPIRED on Fapshi — follow up manually"
+    },
+    {
+      "transactionId": "Pt5ZC0PA",
+      "reference": "7f50ca5a-90b7-4b30-92da-7c8940c058eb",
+      "name": "CLAUDE DESIGNS",
+      "email": "claudedesigns20@gmail.com",
+      "phone": "673031205",
+      "amount": 15000,
+      "date": "2026-08-08T04:59:44.997Z",
+      "reason": "Still EXPIRED on Fapshi — follow up manually"
+    },
+    {
+      "transactionId": "enxceevu",
+      "reference": "b4313bf7-f345-4058-afc4-09291bd5e7c7",
+      "name": "Rewoh John Kanghawah",
+      "email": "Rewohjohn2013@gmail.com",
+      "phone": "676137936",
+      "amount": 15000,
+      "date": "2026-08-09T10:00:58.464Z",
+      "reason": "Still EXPIRED on Fapshi — follow up manually"
+    },
+    {
+      "transactionId": "yi1QvjWg",
+      "reference": "928d777e-969b-4039-8c09-5881c8462ade",
+      "name": "Vishigho Victorine Tefungwa",
+      "email": "vishighovictorinetefungwa@gmail.com",
+      "phone": "677229328",
+      "amount": 15000,
+      "date": "2026-08-09T20:37:52.208Z",
+      "reason": "Still EXPIRED on Fapshi — follow up manually"
+    },
+    {
+      "transactionId": "imM7DfII",
+      "reference": "c36c2d51-9bb5-4940-8d17-bb2cbb3af2d2",
+      "name": "Atabong Ramesette",
+      "email": "atabongramalvin@gmail.com",
+      "phone": "679753735",
+      "amount": 15000,
+      "date": "2026-08-06T01:41:59.304Z",
+      "reason": "Still pending on platform after reconciliation"
+    },
+    {
+      "transactionId": "K0Mwk4yP",
+      "reference": "8aa8c53b-f8d6-466d-b5e5-a6fa9e45902d",
+      "name": "Mekang Fese Tessa Ngome",
+      "email": "tessangome@gmail.com",
+      "phone": "678343409",
+      "amount": 15000,
+      "date": "2026-08-10T20:11:35.419Z",
+      "reason": "Still pending on platform after reconciliation"
+    }
+  ]
+}

@@ -9,6 +9,7 @@ import {
 import { logError, serializeError } from "@/lib/logger";
 import type { PaymentStatus } from "@prisma/client";
 import { transactionsToPdf } from "@/lib/export-transactions";
+import { dateRangeFilenamePart, parseExportDateRange } from "@/lib/export-date-range";
 
 export const dynamic = "force-dynamic";
 
@@ -19,11 +20,26 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const categoryId = searchParams.get("categoryId") ?? undefined;
     const status = (searchParams.get("status") ?? "SUCCESSFUL") as PaymentStatus;
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
+
+    const dateRange = parseExportDateRange(startDate, endDate);
+    if ("error" in dateRange) {
+      return NextResponse.json({ error: dateRange.error }, { status: 400 });
+    }
 
     const transactions = await prisma.payment.findMany({
       where: {
         ...(categoryId ? { categoryId } : {}),
         status,
+        ...(dateRange.gte || dateRange.lte
+          ? {
+              createdAt: {
+                ...(dateRange.gte ? { gte: dateRange.gte } : {}),
+                ...(dateRange.lte ? { lte: dateRange.lte } : {}),
+              },
+            }
+          : {}),
       },
       include: {
         category: { select: { name: true, slug: true } },
@@ -42,8 +58,12 @@ export async function GET(request: Request) {
 
     const categoryName = transactions[0]?.category?.name ?? category?.name;
     const slug = transactions[0]?.category?.slug ?? category?.slug ?? "all";
-    const pdf = await transactionsToPdf(transactions, { categoryName });
-    const filename = `${slug}-successful-payments.pdf`;
+    const pdf = await transactionsToPdf(transactions, {
+      categoryName,
+      dateRangeLabel: dateRange.label,
+    });
+    const rangePart = dateRangeFilenamePart(startDate, endDate);
+    const filename = `${slug}-successful-payments-${rangePart}.pdf`;
 
     return new NextResponse(new Uint8Array(pdf), {
       headers: {

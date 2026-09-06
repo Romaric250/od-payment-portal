@@ -29,6 +29,7 @@ export interface ExportableTransaction {
 interface PdfExportOptions {
   categoryName?: string;
   exportedAt?: Date;
+  dateRangeLabel?: string;
 }
 
 const COLUMNS = [
@@ -101,6 +102,7 @@ export async function transactionsToPdf(
     const startY = drawSummaryCards(doc, pageWidth, headerBottom, [
       { label: "Successful payments", value: String(transactions.length) },
       { label: "Total collected", value: formatCurrency(totalAmount) },
+      { label: "Period", value: options.dateRangeLabel ?? "All time" },
       { label: "Category", value: options.categoryName ?? "All categories" },
     ]);
 

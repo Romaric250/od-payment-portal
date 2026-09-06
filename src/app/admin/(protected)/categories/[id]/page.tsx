@@ -13,6 +13,7 @@ import { AdminPageLoading } from "@/components/admin/admin-loading";
 import { TransactionsTable } from "@/components/admin/transactions-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface CategoryDetailPageProps {
   params: { id: string };
@@ -26,6 +27,8 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
   const [editOpen, setEditOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [exportStartDate, setExportStartDate] = useState("");
+  const [exportEndDate, setExportEndDate] = useState("");
   const [actionError, setActionError] = useState<string | null>(null);
 
   const [stats, setStats] = useState<{
@@ -119,9 +122,14 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
     setExportError(null);
 
     try {
-      const res = await fetch(
-        `/api/admin/transactions/export?categoryId=${params.id}&status=SUCCESSFUL`
-      );
+      const query = new URLSearchParams({
+        categoryId: params.id,
+        status: "SUCCESSFUL",
+      });
+      if (exportStartDate) query.set("startDate", exportStartDate);
+      if (exportEndDate) query.set("endDate", exportEndDate);
+
+      const res = await fetch(`/api/admin/transactions/export?${query}`);
 
       if (!res.ok) {
         const result = await res.json().catch(() => null);
@@ -135,7 +143,11 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
-      anchor.download = `${category?.slug ?? "category"}-successful-payments.pdf`;
+      anchor.download = `${category?.slug ?? "category"}-successful-payments${
+        exportStartDate || exportEndDate
+          ? `-${exportStartDate || "start"}-to-${exportEndDate || "end"}`
+          : ""
+      }.pdf`;
       anchor.click();
       URL.revokeObjectURL(url);
     } catch {
@@ -168,25 +180,56 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
             {category.categoryType} · {category.isActive ? "Active" : "Inactive"}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleExport}
-            disabled={exporting}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            {exporting ? "Exporting..." : "Export PDF"}
-          </Button>
-          {canWrite && (
-            <Button type="button" onClick={() => setEditOpen(true)}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit category
+        <div className="flex flex-col items-end gap-3">
+          <div className="flex flex-wrap items-end justify-end gap-3">
+            <div className="space-y-1">
+              <Label htmlFor="exportStartDate" className="text-xs text-od-text-muted">
+                Export from
+              </Label>
+              <Input
+                id="exportStartDate"
+                type="date"
+                value={exportStartDate}
+                onChange={(e) => setExportStartDate(e.target.value)}
+                className="w-[160px]"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="exportEndDate" className="text-xs text-od-text-muted">
+                Export to
+              </Label>
+              <Input
+                id="exportEndDate"
+                type="date"
+                value={exportEndDate}
+                onChange={(e) => setExportEndDate(e.target.value)}
+                className="w-[160px]"
+              />
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleExport}
+              disabled={exporting}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              {exporting ? "Exporting..." : "Export PDF"}
             </Button>
-          )}
-          <Button type="button" variant="outline" asChild>
-            <Link href="/admin/expenses">View expenses</Link>
-          </Button>
+          </div>
+          <p className="text-xs text-od-text-muted">
+            Leave dates empty to export all successful payments.
+          </p>
+          <div className="flex flex-wrap justify-end gap-2">
+            {canWrite && (
+              <Button type="button" onClick={() => setEditOpen(true)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Edit category
+              </Button>
+            )}
+            <Button type="button" variant="outline" asChild>
+              <Link href="/admin/expenses">View expenses</Link>
+            </Button>
+          </div>
         </div>
       </div>
 

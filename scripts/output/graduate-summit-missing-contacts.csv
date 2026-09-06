@@ -1,0 +1,68 @@
+TransactionId,Reference,Name,Email,Phone,Amount,Date,Reason
+526VN0KL,99cd4ede-7295-46ce-9a32-0a1d668748a5,"Essiane",essianeokoo@gmail.com,659253774,15000,"2026-07-29T11:33:37.081Z","Still EXPIRED on Fapshi — follow up manually"
+R8LYzshB,36fb3002-c1b6-4418-a320-69763f887b85,"Romaric Lonfonyuy",lonfonyuyromaric@gmail.com,650650516,15000,"2026-08-04T07:13:12.663Z","Still EXPIRED on Fapshi — follow up manually"
+G7cmsjQR,43e2b332-4885-44fe-96ba-1203a86ae6e3,"Bukhari Abdou",bukhariabdou7@gmail.com,699977394,15000,"2026-08-06T12:45:02.894Z","Still EXPIRED on Fapshi — follow up manually"
+Hw31m4Yb,75073065-1fc6-47a2-8f66-12ab64b45c3c,"MEFONDJO FOKA LUDIVINE EDRASSE",mefondjoludivine@gmail.com,678022556,15000,"2026-08-07T13:29:42.540Z","Still EXPIRED on Fapshi — follow up manually"
+J2VD2fYa,252f7875-acd5-4332-9546-27211894fe04,"Emmanuel Neba Shu",emmanuelshu8020@gmail.com,671674516,15000,"2026-08-07T19:10:18.013Z","Still EXPIRED on Fapshi — follow up manually"
+TY4Yuzwh,9d89ce7e-2916-47a8-93fe-e9bbe110a112,"Emmanuel Neba Shu",emmanuelshu8020@gmail.com,671674516,15000,"2026-08-07T19:10:41.852Z","Still EXPIRED on Fapshi — follow up manually"
+LfbzVyZK,acb3606d-2f84-4851-8e84-67ab9a360e31,"Emmanuel Neba Shu",emmanuelshu8020@gmail.com,671674516,15000,"2026-08-07T19:11:50.234Z","Still EXPIRED on Fapshi — follow up manually"
+FZLvVXHF,fdc1878b-7385-43a1-980e-ca06c1bd19de,"MEFONDJO FOKA LUDIVINE EDRASSE",mefondjoludivine@gmail.com,654910329,15000,"2026-08-07T23:08:13.554Z","Still EXPIRED on Fapshi — follow up manually"
+Pt5ZC0PA,7f50ca5a-90b7-4b30-92da-7c8940c058eb,"CLAUDE DESIGNS",claudedesigns20@gmail.com,673031205,15000,"2026-08-08T04:59:44.997Z","Still EXPIRED on Fapshi — follow up manually"
+enxceevu,b4313bf7-f345-4058-afc4-09291bd5e7c7,"Rewoh John Kanghawah",Rewohjohn2013@gmail.com,676137936,15000,"2026-08-09T10:00:58.464Z","Still EXPIRED on Fapshi — follow up manually"
+yi1QvjWg,928d777e-969b-4039-8c09-5881c8462ade,"Vishigho Victorine Tefungwa",vishighovictorinetefungwa@gmail.com,677229328,15000,"2026-08-09T20:37:52.208Z","Still EXPIRED on Fapshi — follow up manually"
+imM7DfII,c36c2d51-9bb5-4940-8d17-bb2cbb3af2d2,"Atabong Ramesette",atabongramalvin@gmail.com,679753735,15000,"2026-08-06T01:41:59.304Z","Still pending on platform after reconciliation"
+K0Mwk4yP,8aa8c53b-f8d6-466d-b5e5-a6fa9e45902d,"Mekang Fese Tessa Ngome",tessangome@gmail.com,678343409,15000,"2026-08-10T20:11:35.419Z","Still pending on platform after reconciliation"
+
+
+
+
+npx tsx scripts/inspect-moved-payments.ts
+Summit created 2026-07-28T16:07:45.374Z Open Dreams Graduate Summit 2026
+Summit fields [
+  { key: 't_shirt_size', label: 'T-shirt size' },
+  { key: 'whatsapp_number', label: 'WhatsApp number' }
+]
+Moon created 2026-07-21T12:00:16.416Z Project Moon-Online Summer Academy Batch of Legacy
+Moon fields []
+
+=== SUMMIT 15k created BEFORE summit category ===
+{"id":"6a61e0f6c5a19400c6cc62c6","status":"SUCCESSFUL","name":"Anembom Favour Zenibong","email":"anefavour@icloud.com","created":"2026-07-23T09:37:58.988Z","formKeys":[]}
+{"id":"6a633c317ffef9f44b362d73","status":"SUCCESSFUL","name":"Nji Winner Mezoh","email":"mezohnjiwinner@gmail.com","created":"2026-07-24T10:19:29.761Z","formKeys":[]}
+{"id":"6a6393a53677a5bd7334485e","status":"SUCCESSFUL","name":"Guachuessi François Junior","email":"guachuessijunior@gmail.com","created":"2026-07-24T16:32:37.748Z","formKeys":[]}
+{"id":"6a63ae642bc99b740f37f519","status":"SUCCESSFUL","name":"BALAK BINTA CHAK","email":"francisbalaktangu@gmail.com","created":"2026-07-24T18:26:44.394Z","formKeys":[]}
+{"id":"6a650260ebb1186e62fbb825","status":"SUCCESSFUL","name":"Modeline Puh Ngong","email":"ngongmodeline@gmail.com","created":"2026-07-25T18:37:20.255Z","formKeys":[]}
+{"id":"6a65a1a81f35e4fe8f4b947d","status":"SUCCESSFUL","name":"Dingana Romeo Bengyella","email":"melvismelvis655@gmail.com","created":"2026-07-26T05:56:56.222Z","formKeys":[]}
+{"id":"6a6657312c2199fd72e713a3","status":"SUCCESSFUL","name":"Rahimatou Mohammand Gambo","email":"rahimatougambo2@gmail.com","created":"2026-07-26T18:51:29.260Z","formKeys":[]}
+{"id":"6a66626f01cb8911b7128036","status":"SUCCESSFUL","name":"TAYIMETHA OYONO JULES MATHIEU","email":"oyonojules7@gmail.com","created":"2026-07-26T19:39:27.864Z","formKeys":[]}
+{"id":"6a67afaca3798aee927f1ba1","status":"SUCCESSFUL","name":"Kpue Theresia Favour Bei","email":"kpuefavour@gmail.com","created":"2026-07-27T19:21:16.465Z","formKeys":[]}
+{"id":"6a67c5d5873dfcf03990f00d","status":"SUCCESSFUL","name":"TADJIEUFOUET YOUWO Bradley","email":"bradleyyouwo@gmail.com","created":"2026-07-27T20:55:49.509Z","formKeys":[]}
+
+=== SUMMIT 15k SUCCESSFUL with no summit form fields ===
+{"id":"6a61e0f6c5a19400c6cc62c6","name":"Anembom Favour Zenibong","email":"anefavour@icloud.com","created":"2026-07-23T09:37:58.988Z","beforeCategory":true,"formKeys":[]}
+{"id":"6a633c317ffef9f44b362d73","name":"Nji Winner Mezoh","email":"mezohnjiwinner@gmail.com","created":"2026-07-24T10:19:29.761Z","beforeCategory":true,"formKeys":[]}
+{"id":"6a6393a53677a5bd7334485e","name":"Guachuessi François Junior","email":"guachuessijunior@gmail.com","created":"2026-07-24T16:32:37.748Z","beforeCategory":true,"formKeys":[]}
+{"id":"6a63ae642bc99b740f37f519","name":"BALAK BINTA CHAK","email":"francisbalaktangu@gmail.com","created":"2026-07-24T18:26:44.394Z","beforeCategory":true,"formKeys":[]}
+{"id":"6a650260ebb1186e62fbb825","name":"Modeline Puh Ngong","email":"ngongmodeline@gmail.com","created":"2026-07-25T18:37:20.255Z","beforeCategory":true,"formKeys":[]}
+{"id":"6a65a1a81f35e4fe8f4b947d","name":"Dingana Romeo Bengyella","email":"melvismelvis655@gmail.com","created":"2026-07-26T05:56:56.222Z","beforeCategory":true,"formKeys":[]}
+{"id":"6a6657312c2199fd72e713a3","name":"Rahimatou Mohammand Gambo","email":"rahimatougambo2@gmail.com","created":"2026-07-26T18:51:29.260Z","beforeCategory":true,"formKeys":[]}
+{"id":"6a66626f01cb8911b7128036","name":"TAYIMETHA OYONO JULES MATHIEU","email":"oyonojules7@gmail.com","created":"2026-07-26T19:39:27.864Z","beforeCategory":true,"formKeys":[]}
+{"id":"6a67afaca3798aee927f1ba1","name":"Kpue Theresia Favour Bei","email":"kpuefavour@gmail.com","created":"2026-07-27T19:21:16.465Z","beforeCategory":true,"formKeys":[]}
+{"id":"6a67c5d5873dfcf03990f00d","name":"TADJIEUFOUET YOUWO Bradley","email":"bradleyyouwo@gmail.com","created":"2026-07-27T20:55:49.509Z","beforeCategory":true,"formKeys":[]}
+{"id":"6a6c47a4e08ba2d382078b92","name":"NWOKE NTONGWE LOVEL THECLE","email":"lovelnwoke2@gmail.com","created":"2026-07-31T06:58:44.953Z","beforeCategory":false,"formKeys":[]}
+{"id":"6a6c96282b8f297639e55ec7","name":"Chin Carol Breathly Vernyuy","email":"chinjunior05@gmail.com","created":"2026-07-31T12:33:44.464Z","beforeCategory":false,"formKeys":[]}
+{"id":"6a6d819c08f5ca359f5cad2a","name":"Mounjouenpou Limi Raymond Giovanni","email":"limigiovanni29@gmail.com","created":"2026-08-01T05:18:20.437Z","beforeCategory":false,"formKeys":[]}
+{"id":"6a6da6fb11ab34509826c85a","name":"Nsangong George Yamsilack","email":"nsangonggeorges@gmail.com","created":"2026-08-01T07:57:47.641Z","beforeCategory":false,"formKeys":[]}
+{"id":"6a6e06b2fab84b40e76389c7","name":"Diligence Matute","email":"diligencematute@gmail.com","created":"2026-08-01T14:46:10.511Z","beforeCategory":false,"formKeys":[]}
+{"id":"6a6e38df4c2933ebac96b104","name":"Epoh Praises Lekupi","email":"manyivivian390@gmail.com","created":"2026-08-01T18:20:15.512Z","beforeCategory":false,"formKeys":[]}
+{"id":"6a6e3cf67f062285d62ae4ad","name":"Tikum Visvette Tikum","email":"tikumvisvette@gmail.com","created":"2026-08-01T18:37:42.392Z","beforeCategory":false,"formKeys":[]}
+{"id":"6a6ed1a593da00a859e3a176","name":"Njatou Njoya lawrence junior","email":"njoyajunior17@gmail.com","created":"2026-08-02T05:12:05.096Z","beforeCategory":false,"formKeys":[]}
+{"id":"6a6ef529ddb412c312cd1edc","name":"ASHU PATRICIA ESSAME","email":"essameashu@gmail.com","created":"2026-08-02T07:43:37.560Z","beforeCategory":false,"formKeys":[]}
+{"id":"6a6f54aa8634e2f56ce8c172","name":"Monji Randy Junior","email":"monjirandy4@gmail.com","created":"2026-08-02T14:31:06.105Z","beforeCategory":false,"formKeys":[]}
+{"id":"6a6f890912af3ee0fd7dcfb2","name":"TCHINDA MEKONTSO ERNEST GAËL","email":"ernesttchindagael@gmail.com","created":"2026-08-02T18:14:33.115Z","beforeCategory":false,"formKeys":[]}
+{"id":"6a6f8a8a12af3ee0fd7dcfb4","name":"Bih Emmanuella","email":"bihemmanuella427@gmail.com","created":"2026-08-02T18:20:58.586Z","beforeCategory":false,"formKeys":[]}
+{"id":"6a703e17369a71cdbbd007ed","name":"BRITNEY NGOUEWA YOUWO","email":"youwobritney@gmail.com","created":"2026-08-03T07:07:03.322Z","beforeCategory":false,"formKeys":[]}
+{"id":"6a707f6a3363d69342d0a9bc","name":"Otang Cecilqueen Obasi","email":"obasiotang12@gmail.com","created":"2026-08-03T11:45:46.278Z","beforeCategory":false,"formKeys":[]}
+{"id":"6a70c67736730edb2440a2a0","name":"Tata Dorcas Jingkoh","email":"jingkohdorcas101@gmail.com","created":"2026-08-03T16:48:55.448Z","beforeCategory":false,"formKeys":[]}
+{"id":"6a70ebcd58c71460316051b1","name":"Ngwekem Alright Apiytse Njapah","email":"njapahalright@gmail.com","created":"2026-08-03T19:28:13.435Z","beforeCategory":false,"formKeys":[]}
+{"id":"6a712cd025ca351d90669cbd","name":"Jemimah Neh Foba","email":"jemimahneh18@gmail.com","created":"2026-08-04T00:05:36.043Z","beforeCategory":false,"formKeys":[]}
+{"id":"6a72ef3a506a7f6ee64d4307","name":"Choundong Christine","email":"cchoundong@gmail.com","created":"2026-08-05T08:07:22.545Z","beforeCategory":false,"formKeys":[]}
