@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  allowedDevOrigins: [
+    "*.ngrok-free.app",
+    "*.ngrok.io",
+    "*.ngrok.app",
+  ],
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "utfs.io" },

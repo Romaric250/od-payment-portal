@@ -25,6 +25,7 @@ export interface FapshiStatusResponse {
 export interface FapshiWebhookEvent {
   transId: string;
   externalId?: string;
+  userId?: string;
   status: string;
   amount?: number;
   revenue?: number;
@@ -41,6 +42,7 @@ export interface FapshiWebhookEvent {
 export interface ProcessedWebhookEvent {
   transactionId: string;
   externalId: string;
+  userId?: string;
   status: PaymentStatus;
   amount: number;
   phoneNumber: string;
@@ -223,39 +225,26 @@ export class FapshiService {
     }
   }
 
-  verifyWebhookSignature(
-    payload: string,
-    signature?: string,
-    headers?: Record<string, string | undefined>
-  ): boolean {
-    if (signature && env.fapshiWebhookSecret) {
-      try {
-        const expectedSignature = crypto
-          .createHmac("sha256", env.fapshiWebhookSecret)
-          .update(payload)
-          .digest("hex");
-
-        if (
-          crypto.timingSafeEqual(
-            Buffer.from(signature),
-            Buffer.from(expectedSignature)
-          )
-        ) {
-          return true;
-        }
-      } catch {
-        return false;
-      }
+  /**
+   * Fapshi sends the dashboard webhook secret as `x-wh-secret`.
+   * https://docs.fapshi.com/en/api-reference/endpoint/webhook
+   */
+  verifyWebhookSecret(headerSecret?: string | null): boolean {
+    const expected = env.fapshiWebhookSecret;
+    if (!expected) {
+      return true;
+    }
+    if (!headerSecret) {
+      return false;
     }
 
-    if (headers?.apiuser && headers?.apikey) {
-      return (
-        headers.apiuser === env.fapshiApiUser &&
-        headers.apikey === env.fapshiApiKey
-      );
+    const expectedBuffer = Buffer.from(expected);
+    const receivedBuffer = Buffer.from(headerSecret);
+    if (expectedBuffer.length !== receivedBuffer.length) {
+      return false;
     }
 
-    return !env.fapshiWebhookSecret;
+    return crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
   }
 
   processWebhook(
@@ -266,9 +255,8 @@ export class FapshiService {
       throw new Error("Empty webhook payload");
     }
 
-    const externalId = raw.externalId;
-    if (!externalId) {
-      throw new Error("Webhook missing externalId");
+    if (!raw.transId && !raw.externalId && !raw.userId) {
+      throw new Error("Webhook missing transId, externalId, and userId");
     }
 
     const confirmedAt = raw.dateConfirmed
@@ -279,9 +267,10 @@ export class FapshiService {
 
     return {
       transactionId: raw.transId,
-      externalId,
+      externalId: raw.externalId ?? "",
+      userId: typeof raw.userId === "string" ? raw.userId : undefined,
       status: mapFapshiStatus(raw.status),
-      amount: raw.amount ?? raw.revenue ?? 0,
+      amount: typeof raw.amount === "number" ? raw.amount : 0,
       phoneNumber: raw.phone ?? "",
       financialTransId: raw.financialTransId,
       confirmedAt,

@@ -54,13 +54,29 @@ Default seed credentials (change immediately in production):
 
 ## Fapshi webhook
 
-Configure your Fapshi service webhook URL to:
+Fapshi does not take a webhook URL in `initiate-pay`. Set it **per service** on the [Fapshi dashboard](https://dashboard.fapshi.com). When a payment becomes `SUCCESSFUL`, `FAILED`, or `EXPIRED`, Fapshi POSTs the same body as `GET /payment-status/:transId`.
+
+**Production URL**
 
 ```
 https://your-domain.com/api/webhooks/fapshi
 ```
 
-The webhook verifies payloads via HMAC signature (if `FAPSHI_WEBHOOK_SECRET` is set) or `apiuser`/`apikey` headers.
+**Local test with ngrok**
+
+1. Run the app: `npm run dev`
+2. Expose it: `ngrok http 3000`
+3. On the Fapshi dashboard, set the service webhook URL to:
+
+```
+https://YOUR-NGROK-HOST.ngrok-free.app/api/webhooks/fapshi
+```
+
+4. Set a webhook secret on the dashboard, then put the same value in `FAPSHI_WEBHOOK_SECRET`. Fapshi sends it as the `x-wh-secret` header.
+5. Open `GET /api/webhooks/fapshi` in the browser to confirm ngrok reaches Next.js (`{ ok: true }`).
+6. Make a sandbox/live test payment. Watch the Next.js terminal for `Fapshi webhook received`.
+
+Fapshi sends **one** webhook per event and expects a fast `200`. After you deploy, switch the dashboard URL to the production domain.
 
 ## UploadThing
 
